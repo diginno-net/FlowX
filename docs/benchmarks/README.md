@@ -149,11 +149,30 @@ suspension fails loudly.
 | Cost | Size | Why it stays |
 |---|---:|---|
 | `CompensationStack.Unwind` iterator | 56 B | Once per *failed* flow, immediately before a compensation makes a network call. Hand-rolling a struct enumerator would trade real readability for an allocation nobody will profile. 16 B of object header and method table, 4 B of iterator state, 4 B of thread id, 8 B for the stack it drains, and 24 B for the `CompensationEntry` it yields — `StepNode`, `FlowContext? Scope`, `StepScope JournalScope`, one reference each. |
-| `ExecutionPlan` construction | 520 B | Once per flow at **startup**, not per execution. Measured so a validation rule added later cannot quietly turn a fast build into a slow one. |
+| `ExecutionPlan` construction | 528 B | Once per flow at **startup**, not per execution. Measured so a validation rule added later cannot quietly turn a fast build into a slow one. 16 B of object header and method table, four references — the flow, the graph, the compensable indices, the sorted side effects — and four `bool` flags that push the instance over an 8-byte boundary; plus the `ImmutableArray<int>` builder and its two arrays for the one compensable index, and the `SortedSet<string>` that collects the distinct side effects in a deterministic order. |
 
-Both are asserted by tests that require them to be *greater than zero*. If either
-becomes free, the test fails — which is the cheapest way to notice that a comment
-about a trade-off has stopped being true.
+Both are asserted by tests that pin the **exact** figure. If either moves, the test
+fails — which is the cheapest way to notice that a comment about a trade-off has
+stopped being true.
+
+*This paragraph read "asserted by tests that require them to be **greater than
+zero**", and it was wrong in two different ways.* For the unwind iterator the claim was
+true and insufficient: a `> 0` assertion with a `< 256` ceiling watched 40 B → 48 B →
+56 B go past without objecting, which is the paragraph below. **For the
+`ExecutionPlan` row there was no test at all** — nothing in
+`AllocationBudgetTests` built a plan, and the only thing measuring plan construction was
+`StepLoopBenchmarks.BuildPlan` on the *Benchmark budgets* job, which was red for
+unrelated reasons for two days. `AllocationBudgetTests.BuildingAPlanAllocatesOncePerFlowAtStartup`
+is that test, and it pins 528 B.
+
+**The 520 B in this row was correct when it was written and stopped being correct at
+`60de884`.** `ExecutionPlan` gained `bool HasParallel` there — the *first* `bool` on a
+type whose instance fields until then were exactly four references, so 48 B became
+56 B for one byte of information. `HasSubFlow`, `HasCompensationPolicies` and `HasEmit`
+then cost nothing, which is why one commit moved this figure and three did not. All four
+are precomputed so the engine does not derive them per execution: 8 B once per flow at
+start-up is part of what keeps budget B2 a hard zero. §5.2 records why nothing said so
+for two days.
 
 **"Greater than zero" was not enough, and the unwind iterator is how we found out.**
 It walked 40 B → 48 B → 56 B across two working packages while that assertion and its
@@ -269,24 +288,53 @@ What this commit closes, and what it deliberately does not:
 |---|---|
 | `EngineBenchmarks.SagaFailure` 40 → 56 B | **Resolved.** Cause bisected to `744b005` and `16b6988`, baseline restated above with the reason, and `UnwindingAllocatesOneIteratorPerFailedFlow` now pins the exact figure so the *Allocation budget (B2)* job — which is green and read — catches the next byte. |
 | `StepLoopBenchmarks.CompensateAll` 328 → 440 B | **Resolved.** Same root cause, same commit; 328 B reproduces exactly at `e6fcd37` and at `1c654eb`, and the new 440 B is reported by the container and by the hosted runner alike (run #104). |
-| `StepLoopBenchmarks.BuildPlan` 520 B committed | **Open, and not re-recorded.** It does not reproduce at its own commit, and it does not reproduce across machines: **456 B** at `e6fcd37` here on the recorded runtime with the recorded 10 warmups and 30 iterations, **464 B** here at `dev`, **528 B** on the hosted runner at `dev` — against **520 B** in the file. In the very same runs `CompensateAll` agreed to the byte on both machines, so this is one entry rather than a broken harness. An exact gate on a figure that is not reproducible is gating something other than the code, and the fix is to establish which of the four numbers is the subject — not to overwrite the baseline with whichever machine ran last. |
+| `StepLoopBenchmarks.BuildPlan` 520 B committed | **Resolved, at 528 B, and the eight bytes are attributed.** The paragraph below this table replaces what this row used to say. |
 | `CompilerBenchmarks.GeneratorOnly` / `.WithGenerator` over their 15 % band | **Open, and not re-recorded.** These measure Roslyn plus the generator: **827 906 B** against a committed 588 937 B, and **2 257 176 B** against 1 508 524 B, with `WithGenerator` at **51.2 ms against a committed 11.2 ms**. That is compile-time cost, which is [B12-scale.md](B12-scale.md) §5.2's subject and `generator-cost`'s; re-recording it here would erase the evidence of a regression the project is tracking. |
 | `CompilerBenchmarks.WithGenerator` p95 over budget **B12** | **Open, and it is the budget ceiling rather than an allocation.** p95 **61.97 ms** against 60 ms — 3 % over, and it does not fire every run: the previous full run on the same commit and the same container measured 58.03 ms. It is the only blocking check here that is a timing check, and it sits close enough to its ceiling that this container decides it. Same subject as the row above. |
 
-So the job still exits 1, on failures that predate the failure-path allocation and have
-nothing to do with it — three allocation entries, plus a B12 p95 ceiling that this
-container crosses on some runs and not others. **Recorded rather than papered over** — the
-alternative on offer was to move four baselines in one commit and call the gate green,
-which is the behaviour that produced this section.
+**`BuildPlan` was not irreproducible. It was right, and it was reporting a real
+regression that nobody read.** Its row above previously said the entry *"does not
+reproduce at its own commit, and does not reproduce across machines"*, citing **456 B**
+at `e6fcd37` and **464 B** at `dev` on this container against **528 B** on the hosted
+runner. Neither figure reproduces. Measured directly with
+`GC.GetAllocatedBytesForCurrentThread`, one `ExecutionPlan.Create` call allocates the
+same number of bytes at every repetition count from 1 to 200 000, with **zero** variance:
+
+| Commit | Measured here, directly | In `baseline.json` at the time |
+|---|---:|---:|
+| `48fcc32` (WP-3, which recorded 456 B) | **520 B** | 456 B |
+| `85a8ecb` (parent of the commit below) | **520 B** | 520 B |
+| `60de884` — `feat(dsl): Parallel through the whole stack` | **528 B** | 520 B |
+| `a8e8f2b` (`dev`) | **528 B** | 520 B |
+
+`ExecutionPlan.Create` reads nothing from the environment: no `Environment.ProcessorCount`,
+no buffer sized from the machine, and — despite what PLAN open item 15 supposed — **no
+Roslyn**. It is `FlowX.Core` only: an `ImmutableArray<int>` builder, a `SortedSet<string>`,
+a collection expression and the plan object. WP-31's *"Roslyn sizes some pools from
+`ProcessorCount`"* is a caveat about the generator-cost probe and does not reach this path.
+
+The 8 B is `ExecutionPlan.HasParallel`, and §4 records where it goes. So the error line at
+run #41 — `allocated 528 B, baseline 520 B` — was correct on the day it was printed, for a
+change made in `60de884`, which was already merged at `1c654eb`. The gate did its job for
+sixty-odd pushes and nothing was listening. **That is the finding, and it is a worse one
+than a flaky benchmark**: the entry is now 528 B, and
+`AllocationBudgetTests.BuildingAPlanAllocatesOncePerFlowAtStartup` pins it in the green
+*Allocation budget (B2)* job so the next byte fails on the pull request that adds it.
+
+So the job still exits 1, on the two `CompilerBenchmarks` allocation entries and the B12
+p95 ceiling — none of which are the engine, and none of which are re-recorded here.
+**Recorded rather than papered over**: the alternative on offer was to move four baselines
+in one commit and call the gate green, which is the behaviour that produced this section.
 
 Measured on the container this baseline was recorded on, Release, .NET 10.0.10, x64,
-after the two entries above were restated:
+after the three entries above were restated:
 
 ```
-EngineBenchmarks.Query            235.24 ns     0 B
-EngineBenchmarks.SagaSuccess      309.07 ns     0 B
-EngineBenchmarks.SagaFailure      418.86 ns    56 B    <- gate accepts
-StepLoopBenchmarks.CompensateAll  224.52 ns   440 B    <- gate accepts
+EngineBenchmarks.Query            242.20 ns     0 B
+EngineBenchmarks.SagaSuccess      310.64 ns     0 B
+EngineBenchmarks.SagaFailure      423.57 ns    56 B    <- gate accepts
+StepLoopBenchmarks.CompensateAll  178.20 ns   440 B    <- gate accepts
+StepLoopBenchmarks.BuildPlan      216.52 ns   528 B    <- gate accepts
 ```
 
 ## 6. Caveats

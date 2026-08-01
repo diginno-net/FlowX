@@ -33,6 +33,17 @@ public sealed class AllocationBudgetTests
     /// </remarks>
     private const long UnwindIteratorBytes = 56;
 
+    /// <summary>
+    /// Bytes one <see cref="ExecutionPlan.Create"/> call allocates on a 64-bit runtime,
+    /// and the figure <c>docs/benchmarks/baseline.json</c> gates
+    /// <c>StepLoopBenchmarks.BuildPlan</c> on.
+    /// </summary>
+    /// <remarks>
+    /// See <see cref="BuildingAPlanAllocatesOncePerFlowAtStartup"/> for where the bytes go
+    /// and for what has to be restated alongside this constant when it changes.
+    /// </remarks>
+    private const long PlanConstructionBytes = 528;
+
     private static readonly ExecutionPlan Plan = ExecutionPlan.Create(
         Fixtures.PlaceOrder,
         StepGraph.Create([
@@ -291,5 +302,88 @@ public sealed class AllocationBudgetTests
             "committed. Either the iterator gained state, or CompensationEntry gained a " +
             "field — and EngineBenchmarks.SagaFailure in docs/benchmarks/baseline.json now " +
             "disagrees with this measurement. Restate both, in this commit, with the reason.");
+    }
+
+    /// <summary>
+    /// Building a plan allocates, once per flow at start-up, and the figure is pinned.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <strong>This is not budget B2.</strong> B2 is per <em>step</em>, on the execution
+    /// path, and it is a hard zero. <see cref="ExecutionPlan.Create"/> runs once per flow
+    /// while the host is composing itself, and the whole point of it allocating is that
+    /// the engine then does not: every precomputed field here — the compensable indices,
+    /// the sorted side effects, <see cref="ExecutionPlan.HasParallel"/> and its three
+    /// siblings — is work moved off the hot path. Recorded so that a validation rule added
+    /// later cannot quietly turn a fast start-up into a slow one.
+    /// </para>
+    /// <para>
+    /// <strong>Why an exact figure and not a band, and why this test exists at all.</strong>
+    /// <c>docs/benchmarks/README.md</c> §4 said both recorded costs were "asserted by tests
+    /// that require them to be greater than zero". For the unwind iterator that was true and
+    /// insufficient — see <see cref="UnwindingAllocatesOneIteratorPerFailedFlow"/>, where a
+    /// band let 16 B through. For this row it was not true at all: no test measured plan
+    /// construction, and the only thing that did was <c>StepLoopBenchmarks.BuildPlan</c> on
+    /// the <em>Benchmark budgets</em> job, which was red for unrelated reasons for two days.
+    /// Under that arrangement the plan grew from 520 B to 528 B at <c>60de884</c> and the
+    /// only report of it was one error line among five that nobody was reading.
+    /// </para>
+    /// <para>
+    /// <strong>The figure is exact, deterministic and machine-independent, and that was
+    /// checked rather than assumed.</strong> <c>ExecutionPlan.Create</c> reads nothing from
+    /// the environment: no <c>Environment.ProcessorCount</c>, no pooled buffer sized from
+    /// the machine, no Roslyn. Measured directly, one call allocates the same number of
+    /// bytes at every repetition count from 1 to 200 000, and the container and the GitHub
+    /// hosted runner report the same 528 B for the benchmark that gates it.
+    /// </para>
+    /// <para>
+    /// <strong>Where the 528 B goes,</strong> for the four-step plan below: the
+    /// <see cref="ExecutionPlan"/> instance itself — 16 B of header and method table, four
+    /// references, and four <c>bool</c> flags that push it over an 8-byte boundary — plus
+    /// the <c>ImmutableArray&lt;int&gt;</c> builder and its two arrays for the one
+    /// compensable index, and the <c>SortedSet&lt;string&gt;</c> with a node per distinct
+    /// side effect that collects them in a deterministic order. The 8 B step from 520 B is
+    /// <see cref="ExecutionPlan.HasParallel"/>: it was the <em>first</em> <c>bool</c> on a
+    /// type whose fields until then were exactly four references, so it cost a padding word,
+    /// and <see cref="ExecutionPlan.HasSubFlow"/>,
+    /// <see cref="ExecutionPlan.HasCompensationPolicies"/> and
+    /// <see cref="ExecutionPlan.HasEmit"/> then cost nothing at all.
+    /// </para>
+    /// <para>
+    /// <strong>Change it and three things must change together</strong>: this literal,
+    /// the table in <c>docs/benchmarks/README.md</c> §4, and <c>allocatedBytes</c> for
+    /// <c>StepLoopBenchmarks.BuildPlan</c> in <c>docs/benchmarks/baseline.json</c>. The
+    /// graph below is the one <c>StepLoopBenchmarks.BuildPlan</c> builds, deliberately and
+    /// not by reusing <see cref="Fixtures"/>: <c>Fixtures.CapturePayment</c> declares a
+    /// second side effect, which would make this a different measurement from the one the
+    /// baseline gates and quietly break the link between the two.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void BuildingAPlanAllocatesOncePerFlowAtStartup()
+    {
+        var validate = CapabilityDescriptor.Create("order.validate", "1.0.0", true);
+        var reserve = CapabilityDescriptor.Create("inventory.reserve", "1.0.0", true, "inventory-ledger");
+        var release = CapabilityDescriptor.Create("inventory.release", "1.0.0", true, "inventory-ledger");
+        var capture = CapabilityDescriptor.Create("payment.capture", "2.1.0", false, "payment-gateway");
+
+        var flow = FlowDescriptor.Create(
+            "order.place", "1.0.0", ExecutionProfile.Ephemeral, TimeSpan.FromSeconds(30));
+
+        var graph = StepGraph.Create([
+            StepNode.ForCapability(0, validate),
+            StepNode.ForCapability(1, reserve, release),
+            StepNode.ForCapability(2, capture),
+            StepNode.ForEmit(3, "order.placed"),
+        ]);
+
+        var allocated = Allocation.Measure(() => _ = ExecutionPlan.Create(flow, graph));
+
+        allocated.ShouldBe(
+            PlanConstructionBytes,
+            $"Measured {allocated} B to build a four-step plan, against {PlanConstructionBytes} B " +
+            "committed. Something in ExecutionPlan.Create started allocating, or the plan " +
+            "gained a field — and StepLoopBenchmarks.BuildPlan in docs/benchmarks/baseline.json " +
+            "now disagrees with this measurement. Restate both, in this commit, with the reason.");
     }
 }

@@ -9,9 +9,19 @@
     "claimed ratios were machine-independent; the data refuted it and the claim is",
     "withdrawn.",
     "",
-    "Re-recorded at WP-11 with 10 warmups and 30 iterations (was 3 and 10) for the P0",
-    "kill-criterion report. Still shared container hardware, and still advisory for",
-    "timing -- see docs/benchmarks/P0.md for why that does not weaken the verdict."
+    "Re-recorded at WP-11 for the P0 kill-criterion report. Still shared container",
+    "hardware, and still advisory for timing -- see docs/benchmarks/P0.md for why that",
+    "does not weaken the verdict.",
+    "",
+    "THAT SENTENCE READ 'with 10 warmups and 30 iterations (was 3 and 10)', and",
+    "recordedOn below carried the same pair. Nothing in this repository produces it.",
+    "tests/FlowX.Benchmarks/Program.cs has exactly one revision since WP-3 and it",
+    "configures WithWarmupCount(3).WithIterationCount(10); scripts/run-benchmarks.sh has",
+    "exactly one revision and passes no override; and the CI job gating against these",
+    "figures runs the harness as committed. So every run these numbers have ever been",
+    "compared against was 3 and 10, and recordedOn now says so. A recorded configuration",
+    "is the claim that makes two numbers comparable, which is exactly why it has to be",
+    "the configuration that ran."
   ],
   "recordedOn": {
     "runtime": ".NET 10.0.10 (10.0.1026.32716)",
@@ -19,8 +29,8 @@
     "os": "Linux Ubuntu 24.04.4 LTS (Noble Numbat)",
     "cpu": "Intel Xeon Processor 2.10GHz, 1 CPU, 4 logical and 4 physical cores",
     "arch": "X64 RyuJIT AVX-512F+CD+BW+DQ+VL+VBMI",
-    "iterationCount": 30,
-    "warmupCount": 10,
+    "iterationCount": 10,
+    "warmupCount": 3,
     "recordedAt": "WP-14",
     "note": "Shared container hardware. Timing figures are indicative only; allocations are the contract -- except CompilerBenchmarks, which measures Roslyn's allocations and is banded. B1 measured 172.3 ns when P0.md was written and 129.5 ns here, on the same commit: a 25% swing that is exactly the noise P0.md documents, and that leaves its verdict untouched at a ~30x margin either way."
   },
@@ -104,10 +114,10 @@
     "StepLoopBenchmarks.BuildPlan": {
       "absoluteNs": 164.07,
       "ratioToBaseline": 54.149,
-      "allocatedBytes": 520,
+      "allocatedBytes": 528,
       "budget": "build-time",
       "budgetNs": 100000,
-      "note": "Runs once per flow at startup, not per execution."
+      "note": "Runs once per flow at startup, not per execution. Moved from 520 B to 528 B, and the eight bytes are attributed rather than absorbed: ExecutionPlan gained bool HasParallel at 60de884. It was the FIRST bool on a type whose instance fields until then were exactly four references -- 16 B of header and method table plus 32 B of fields is 48 B, and one more byte pays a whole 8-byte padding word. HasSubFlow (adf0c0c), HasCompensationPolicies (16b6988) and HasEmit (055b744) then cost nothing, which is why one commit moved this and three did not. Each of the four is precomputed so the engine does not derive it per execution, so 8 B once per flow at startup is what keeps budget B2 a hard zero. THIS FIGURE IS EXACT AND MACHINE-INDEPENDENT, AND THAT WAS CHECKED RATHER THAN ASSUMED. ExecutionPlan.Create reads nothing from the environment: no Environment.ProcessorCount, no pool sized from the machine, and no Roslyn -- it is FlowX.Core only. Measured directly with GC.GetAllocatedBytesForCurrentThread it returns the same count at every repetition from 1 to 200 000 with zero variance: 520 B at 48fcc32 and at 85a8ecb, 528 B from 60de884 onwards. BenchmarkDotNet on the container and the GitHub hosted runner both report 528 B at dev, and AllocationBudgetTests.BuildingAPlanAllocatesOncePerFlowAtStartup pins it a third way, in the green Allocation budget (B2) job, so the next byte fails on the pull request that adds it. PLAN open item 15 recorded this entry as irreproducible -- 456 B at e6fcd37, 464 B at dev -- and neither figure reproduces: the same commits measure 520 B and 528 B here. The gate was right from run #41 and nobody was reading it."
     },
     "CompilerBenchmarks.WithoutGenerator": {
       "absoluteNs": 4044320.78,
