@@ -391,30 +391,42 @@ its neighbours.
 
 **Why the flaky ceiling is not the argument.** §5.2 recorded the p95 at **61.97 ms** on
 one run and **58.03 ms** on the run before it, on the same commit and the same container.
-Two further runs recorded here measured **15.57 ms** and **16.99 ms**, with means of
-14.13 ms and 15.76 ms against the 51.2 ms the same source reported. So the failure did not
-merely straddle the line, it did not occur at all — four values spanning 4× across one
-60 ms mark, and which side of it a commit lands on is the container's decision rather than
-the commit's. *Those first two figures are quoted rather than reproduced, and this document
-no longer treats that source as settled: its `BuildPlan` measurements, taken in the same
-session, are the ones the table in §5.2 disproves.* None of that is load-bearing. A flaky
+Two further runs recorded here measured **15.57 ms** and **16.99 ms** on a quiet
+container, and a third under load measured **123.24 ms**. Five values spanning **8×**
+across one 60 ms mark, on one commit and one machine — so which side of the line a commit
+lands on is the container's mood rather than the commit's doing. The table below shows the
+load is the whole of it. None of that is load-bearing for the decision, though: a flaky
 gate is normally a reason to fix the measurement, and here there is nothing to fix — the
 line was not a budget in the first place. The flakiness is a symptom; §5.1 is the diagnosis.
 
-**Two runs of the three, on `a8e8f2b`, on the recording container**, so that the entries
+**Three runs of the three, on `a8e8f2b`, on the recording container**, so that the entries
 above are not the only place these numbers exist:
 
-| | Committed | Run A | Run B | Hosted runner, run #41, `1c654eb` |
-|---|---:|---:|---:|---:|
-| `WithoutGenerator` allocated | 678 312 B | 650 182 B | 649 409 B | *within its band, not printed* |
-| `GeneratorOnly` allocated | 588 937 B | **746 058 B** | **746 265 B** | **770 994 B** |
-| `WithGenerator` allocated | 1 508 524 B | **1 860 039 B** | **1 857 802 B** | **1 800 422 B** |
-| `WithGenerator` mean | 11.17 ms | 14.13 ms | 15.76 ms | — |
+| | Committed | Run A, quiet | Run B, quiet | Run C, load 6.2 | Hosted runner #41, `1c654eb` |
+|---|---:|---:|---:|---:|---:|
+| `WithoutGenerator` allocated | 678 312 B | 650 182 B | 649 409 B | 727 506 B | *within its band, not printed* |
+| `GeneratorOnly` allocated | 588 937 B | **746 058 B** | **746 265 B** | **830 516 B** | **770 994 B** |
+| `WithGenerator` allocated | 1 508 524 B | **1 860 039 B** | **1 857 802 B** | **2 762 444 B** | **1 800 422 B** |
+| `WithGenerator` mean | 11.17 ms | 14.13 ms | 15.76 ms | 94.21 ms | — |
+| `WithGenerator` p95 | — | 15.57 ms | 16.99 ms | **123.24 ms** | — |
 
-Runs A and B agree with each other to **0.13 %** on all three allocation figures, which is
-worth saying plainly: the quantity is not noisy, it has simply *moved*, by +26.7 % and
-+23.3 %, because the generator became more expensive. A 15 % band cannot be made to pass
-that without either widening past the regression or deleting it.
+Two things in that table, and they point the same way.
+
+**Runs A and B agree with each other to 0.13 %.** On a quiet container the quantity is not
+noisy — it has simply *moved*, by +26.7 % and +23.3 %, because the generator became more
+expensive. A 15 % band cannot be made to pass that without either widening past the
+regression or deleting it.
+
+**Run C is the same commit under load, and it moves the allocation column by 11 % and
+the p95 by 8×.** That is the property the gate design in §5 turns on, failing: for the
+engine benchmarks allocation counts are load-independent — `StepLoopBenchmarks.BuildPlan`
+reported **528 B** in all three runs, and `CompensateAll` 440 B — but for a benchmark that
+drives a whole Roslyn compilation they are not. It also settles where §5.2's **827 906 B**
+and **61.97 ms** came from: run C reproduces both, at 830 516 B and 123.24 ms. They were
+never wrong, they were a busy machine, and a check that a busy machine can decide is a
+check on the machine. `python3 scripts/check-benchmark-budgets.py BenchmarkDotNet.Artifacts`
+exits **0** on run C — the run whose `WithGenerator` p95 is double the ceiling that used
+to be here.
 
 ## 6. Caveats
 
