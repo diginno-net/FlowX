@@ -366,11 +366,14 @@ What each of the three was gating, and who has it now:
 | `WithGenerator` p95 vs 60 ms | a **budget ceiling that is not a budget** | Nobody, and nobody should. `60000000` ns appears in no document in this repository other than `baseline.json` itself. **B12's budget is `+8 %` relative build overhead** ([14-Performance](../14-Performance.md)), and a p95 on a single benchmark cannot express a ratio between two builds. |
 
 **What is genuinely lost.** One thing: a per-commit allocation band on binding the
-generated output at *one* flow. It could not fire usefully — the figure has moved 23 %
-since it was recorded, so the only ways to green it were to widen the band past the
-regression or to re-record the regression away — and both of the jobs that own the
-end-to-end signal are blocking. Nothing else: the other three columns are strictly better
-measured elsewhere, by gates that are already green and already read.
+generated output at *one* flow. It could not fire usefully — on a quiet container the
+figure has moved 23 % since it was recorded, so the only ways to green it were to widen
+the band past the regression or to re-record the regression away — and of the two jobs
+that own the end-to-end signal, `Budget B12 — build overhead` is blocking and `P1 scale`
+is advisory until B12-scale.md records a PASS. So the replacement for this one column is
+one blocking job rather than two, and that is the honest size of it. Nothing else is lost:
+the other three columns are strictly better measured elsewhere, by gates that are already
+green and already read.
 
 **The numbers are not re-recorded, and that is the point.** The committed figures stay in
 `baseline.json` exactly as they were, and the gate now prints each of them beside what the
