@@ -446,3 +446,136 @@ jobs:
             exit 1
           fi
           echo "Gate correctly reported the unmeasured benchmarks as absent."
+
+      - name: An entry whose gate is "none" must be reported, and must not disarm its neighbours
+        # `"gate": "none"` exists because three entries in this baseline measure
+        # compile-time cost, which two other blocking jobs already own and measure
+        # better — see docs/benchmarks/README.md §5.3. An opt-out is the most dangerous
+        # thing that can be added to a gate, so it gets the same treatment the gate
+        # itself gets: it is not trusted until it has been seen to behave.
+        #
+        # Three properties, all asserted below:
+        #   1. an ungated entry does not block, however far out it is;
+        #   2. it is still PRINTED, with the gate that owns the signal named — an
+        #      opt-out that goes quiet is how a budget stops being held;
+        #   3. it is SCOPED. A gated benchmark in the same report, over by the same
+        #      margin, still blocks. An opt-out that leaks is worse than no opt-out.
+        run: |
+          python3 - <<'PY'
+          import json, os
+          os.makedirs('/tmp/ungated/results', exist_ok=True)
+          baseline = json.load(open('docs/benchmarks/baseline.json'))
+          by_type = {}
+          for name, entry in baseline['benchmarks'].items():
+              type_name, method = name.rsplit('.', 1)
+              ungated = entry.get('gate') == 'none'
+              # Ten times the committed allocation for every ungated entry, and the same
+              # multiple on ONE gated entry (StepLoopBenchmarks.BuildPlan) so the run
+              # proves the opt-out did not travel.
+              inflate = ungated or name == 'StepLoopBenchmarks.BuildPlan'
+              by_type.setdefault(type_name, []).append({
+                  'Type': type_name,
+                  'Method': method,
+                  'Statistics': {
+                      'Mean': entry['absoluteNs'],
+                      'Percentiles': {'P95': entry['absoluteNs'] * (10 if inflate else 1.02)},
+                  },
+                  'Memory': {'BytesAllocatedPerOperation':
+                             entry['allocatedBytes'] * 10 if inflate
+                             else entry['allocatedBytes']},
+              })
+          for type_name, group in by_type.items():
+              json.dump({'Benchmarks': group},
+                        open(f"/tmp/ungated/results/{type_name}-report-full.json", 'w'))
+          PY
+
+          set +e
+          output=$(python3 scripts/check-benchmark-budgets.py /tmp/ungated 2>&1)
+          status=$?
+          set -e
+          echo "$output"
+
+          # Property 3 first: the one gated entry that was inflated must still block.
+          if [ "$status" -eq 0 ]; then
+            echo "::error::The gate accepted a 10x allocation on StepLoopBenchmarks.BuildPlan," \
+                 "which is gated. An opt-out on another entry disarmed it."
+            exit 1
+          fi
+
+          if ! echo "$output" | grep -q 'StepLoopBenchmarks.BuildPlan: allocated'; then
+            echo "::error::The gate blocked, but not on the gated entry that was inflated."
+            exit 1
+          fi
+
+          # Properties 1 and 2: every ungated entry is absent from the error list and
+          # present in the report, with the gate that owns it named.
+          python3 - "$output" <<'PY'
+          import json, sys
+          report = sys.argv[1]
+          baseline = json.load(open('docs/benchmarks/baseline.json'))
+          failed = False
+          for name, entry in baseline['benchmarks'].items():
+              if entry.get('gate') != 'none':
+                  continue
+              if f'::error::{name}:' in report:
+                  print(f'::error::{name} is ungated but the gate blocked on it.')
+                  failed = True
+              if f'{name} — measured, not gated' not in report:
+                  print(f'::error::{name} is ungated and was not reported as such. '
+                        'An opt-out that prints nothing is a deleted gate.')
+                  failed = True
+              if entry['gatedBy'].split('(')[0].strip() not in report:
+                  print(f'::error::{name} was reported without naming the gate that owns it.')
+                  failed = True
+          sys.exit(1 if failed else 0)
+          PY
+          echo "Ungated entries are reported and scoped; gated entries still block."
+
+      - name: An opt-out with no owner must be rejected
+        # The one way `"gate": "none"` could reproduce the failure it exists to fix:
+        # somebody silences an entry without saying who measures it instead. Then the
+        # signal is gone and nothing records where it went. So an opt-out without
+        # `gatedBy` is not a weaker gate — it is a blocking error.
+        run: |
+          python3 - <<'PY'
+          import json, os
+          os.makedirs('/tmp/orphan/results', exist_ok=True)
+          baseline = json.load(open('docs/benchmarks/baseline.json'))
+          # Silence a gated entry the way a hurried commit would, and forget the owner.
+          entry = baseline['benchmarks']['EngineBenchmarks.Query']
+          entry['gate'] = 'none'
+          entry.pop('gatedBy', None)
+          json.dump(baseline, open('/tmp/orphan/baseline.json', 'w'))
+          for name, e in baseline['benchmarks'].items():
+              type_name, method = name.rsplit('.', 1)
+              path = f"/tmp/orphan/results/{type_name}-report-full.json"
+              document = json.load(open(path)) if os.path.exists(path) else {'Benchmarks': []}
+              document['Benchmarks'].append({
+                  'Type': type_name,
+                  'Method': method,
+                  'Statistics': {
+                      'Mean': e['absoluteNs'],
+                      'Percentiles': {'P95': e['absoluteNs'] * 1.02},
+                  },
+                  'Memory': {'BytesAllocatedPerOperation': e['allocatedBytes']},
+              })
+              json.dump(document, open(path, 'w'))
+          PY
+
+          set +e
+          output=$(python3 scripts/check-benchmark-budgets.py /tmp/orphan \
+                     --baseline /tmp/orphan/baseline.json 2>&1)
+          status=$?
+          set -e
+          echo "$output"
+
+          if [ "$status" -eq 0 ]; then
+            echo "::error::The gate accepted an entry silenced with no gate named to replace it."
+            exit 1
+          fi
+
+          if ! echo "$output" | grep -q "EngineBenchmarks.Query: .*gatedBy"; then
+            echo "::error::The gate rejected the orphaned opt-out without saying what was missing."
+            exit 1
+          fi
+          echo "Gate correctly rejected an opt-out with no owner."

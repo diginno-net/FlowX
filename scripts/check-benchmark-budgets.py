@@ -11,6 +11,11 @@ Two classes of check, because only one of them is trustworthy on shared hardware
     absolute drift  mean vs the committed baseline
     ratio drift     mean/fastest vs the committed baseline
 
+  NOT GATED HERE (measured, printed, and owned by a named gate elsewhere)
+    an entry may set "gate": "none" together with "gatedBy". Its committed figures
+    stay in the file and are still compared and printed on every run; only the
+    blocking verdict moves. "gate": "none" without "gatedBy" is a blocking error.
+
 The split is not a convenience. WP-3 asserted that ratios between benchmarks in the
 same run are machine-independent and could therefore be gated tightly. Two runs of
 the identical commit on the identical container then disagreed by up to 63 % on
@@ -97,14 +102,24 @@ def load_results(artifacts_dir: str) -> dict[str, dict]:
     return results
 
 
-def check(results: dict[str, dict], baseline: dict, strict: bool) -> tuple[list[str], list[str]]:
-    """Return (blocking failures, advisory notes)."""
+def duration(nanoseconds: float) -> str:
+    """A time, in the unit a reader of that particular benchmark thinks in."""
+    return (
+        f"{nanoseconds / 1e6:.2f} ms" if nanoseconds >= 1e6 else f"{nanoseconds:.1f} ns"
+    )
+
+
+def check(
+    results: dict[str, dict], baseline: dict, strict: bool
+) -> tuple[list[str], list[str], list[str]]:
+    """Return (blocking failures, advisory notes, entries measured but not gated)."""
     tolerances = baseline["tolerances"]
     ratio_tolerance = tolerances["ratioPercent"] / 100.0
     absolute_tolerance = tolerances["absolutePercent"] / 100.0
 
     blocking: list[str] = []
     advisory: list[str] = []
+    ungated: list[str] = []
     drift_bucket = blocking if strict else advisory
 
     for name, expected in baseline["benchmarks"].items():
@@ -114,36 +129,77 @@ def check(results: dict[str, dict], baseline: dict, strict: bool) -> tuple[list[
             blocking.append(f"{name}: in the baseline but absent from this run")
             continue
 
-        # BLOCKING 1 — allocations. Exact, machine-independent, and B2/B6 are hard zeros.
+        # An entry may declare that something else owns its signal. Three entries here
+        # measure compile-time cost, which the `generator-cost` and `Budget B12 — build
+        # overhead` jobs already gate, relatively and against committed baselines; this
+        # gate could only ever have gated it absolutely, against figures it was not
+        # allowed to re-record. See docs/benchmarks/README.md section 5.3.
         #
-        # Exact only for code WE wrote. A benchmark that drives Roslyn measures Roslyn's
-        # allocations too, and those move by a few hundred bytes between runs of the same
-        # commit — so an exact gate there fails on noise and teaches people to ignore it.
-        # Such entries declare allocationTolerancePercent and are checked as a band.
-        tolerance = expected.get("allocationTolerancePercent")
+        # An opt-out is the most dangerous thing in a gate, so it is constrained twice.
+        # It must name the gate that took the signal over — an entry silenced with no
+        # owner is the failure this whole file exists to prevent, so that is BLOCKING,
+        # not a weaker check. And an ungated entry is still measured, still compared,
+        # and still printed on every run, drift included: the committed figures stay in
+        # the file as the record of what the numbers were, and a run that no longer
+        # matches them says so out loud. Silence is what turns a budget into a memory.
+        gate = expected.get("gate", "blocking")
 
-        if tolerance is None:
-            if actual["allocated"] != expected["allocatedBytes"]:
-                blocking.append(
-                    f"{name}: allocated {actual['allocated']} B, baseline "
-                    f"{expected['allocatedBytes']} B (allocation counts are exact)"
-                )
-        else:
-            ceiling = expected["allocatedBytes"] * (1 + tolerance / 100)
-
-            if actual["allocated"] > ceiling:
-                blocking.append(
-                    f"{name}: allocated {actual['allocated']} B, more than "
-                    f"{tolerance}% above the baseline {expected['allocatedBytes']} B"
-                )
-
-        # BLOCKING 2 — the documented ceiling from docs/14-Performance.md.
-        budget_ns = expected.get("budgetNs")
-        if budget_ns and actual["p95_ns"] > budget_ns:
+        if gate not in ("blocking", "none"):
             blocking.append(
-                f"{name}: p95 {actual['p95_ns']:.1f} ns exceeds budget "
-                f"{expected['budget']} of {budget_ns} ns"
+                f"{name}: baseline declares gate {gate!r}, which this checker does not "
+                "know. Use 'blocking' (the default) or 'none' with gatedBy."
             )
+            continue
+
+        if gate == "none":
+            owner = expected.get("gatedBy")
+
+            if not owner:
+                blocking.append(
+                    f"{name}: gate is 'none' with no gatedBy. Removing an entry from "
+                    "this gate is allowed; removing it without naming the gate that "
+                    "measures it instead is how a budget stops being held."
+                )
+                continue
+
+            ungated.append(
+                f"{name} — measured, not gated. {actual['allocated']} B, p95 "
+                f"{duration(actual['p95_ns'])}, against {expected['allocatedBytes']} B "
+                f"and {duration(expected.get('absoluteNs', 0.0))} committed. "
+                f"Owned by: {owner}"
+            )
+
+        if gate == "blocking":
+            # BLOCKING 1 — allocations. Exact, machine-independent, and B2/B6 are hard zeros.
+            #
+            # Exact only for code WE wrote. A benchmark that drives Roslyn measures Roslyn's
+            # allocations too, and those move by a few hundred bytes between runs of the same
+            # commit — so an exact gate there fails on noise and teaches people to ignore it.
+            # Such entries declare allocationTolerancePercent and are checked as a band.
+            tolerance = expected.get("allocationTolerancePercent")
+
+            if tolerance is None:
+                if actual["allocated"] != expected["allocatedBytes"]:
+                    blocking.append(
+                        f"{name}: allocated {actual['allocated']} B, baseline "
+                        f"{expected['allocatedBytes']} B (allocation counts are exact)"
+                    )
+            else:
+                ceiling = expected["allocatedBytes"] * (1 + tolerance / 100)
+
+                if actual["allocated"] > ceiling:
+                    blocking.append(
+                        f"{name}: allocated {actual['allocated']} B, more than "
+                        f"{tolerance}% above the baseline {expected['allocatedBytes']} B"
+                    )
+
+            # BLOCKING 2 — the documented ceiling from docs/14-Performance.md.
+            budget_ns = expected.get("budgetNs")
+            if budget_ns and actual["p95_ns"] > budget_ns:
+                blocking.append(
+                    f"{name}: p95 {actual['p95_ns']:.1f} ns exceeds budget "
+                    f"{expected['budget']} of {budget_ns} ns"
+                )
 
         # ADVISORY — timing drift. See the module docstring for why this is not blocking.
         expected_ratio = expected.get("ratioToBaseline")
@@ -167,7 +223,7 @@ def check(results: dict[str, dict], baseline: dict, strict: bool) -> tuple[list[
     for name in sorted(set(results) - set(baseline["benchmarks"])):
         advisory.append(f"{name} is new and has no baseline entry. Add one.")
 
-    return blocking, advisory
+    return blocking, advisory, ungated
 
 
 def main() -> int:
@@ -195,7 +251,18 @@ def main() -> int:
             f"{r['ratio']:7.2f} {r['allocated']:6d}B"
         )
 
-    blocking, advisory = check(results, baseline, args.strict)
+    blocking, advisory, ungated = check(results, baseline, args.strict)
+
+    # Printed before the advisory notes and before the verdict, on every run, passing
+    # ones included — the same discipline scripts/check-generator-cost.py applies to
+    # the absolute criterion it cannot pass. A green tick on this job does not mean
+    # every benchmark below is gated by it, and the only way that stays true is if the
+    # job says which ones are not, and who took them.
+    if ungated:
+        print()
+        print("Measured here, gated elsewhere:")
+        for note in ungated:
+            print(f"  {note}")
 
     print()
     for note in advisory:
@@ -208,7 +275,10 @@ def main() -> int:
         print(f"\n{len(blocking)} blocking gate failure(s).")
         return EXIT_REGRESSION
 
-    print(f"\nAll blocking gates pass ({len(advisory)} advisory note(s)).")
+    print(
+        f"\nAll blocking gates pass ({len(advisory)} advisory note(s), "
+        f"{len(ungated)} entr(y/ies) gated elsewhere)."
+    )
     return EXIT_OK
 
 
