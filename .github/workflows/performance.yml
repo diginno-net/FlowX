@@ -45,7 +45,21 @@ jobs:
             --logger "console;verbosity=detailed"
 
   benchmarks:
-    name: Benchmark budgets (B1, B3, B12 isolated)
+    # This job was named "Benchmark budgets (B1, B3, B12 isolated)" and gated B12 in
+    # two ways it could not sustain: a 15 % band on what Roslyn allocates compiling one
+    # file, and a 60 ms p95 ceiling that is written down in no budget document at all.
+    # B12's budget is +8 % relative build overhead, which neither of those expresses,
+    # and both `Budget B12 — build overhead` and `Generator cost vs the committed
+    # baseline` below already measure it relatively, against committed baselines, and
+    # pass. CompilerBenchmarks still RUNS here and its results are still published and
+    # uploaded — what changed is that this job no longer renders a verdict on them.
+    # docs/benchmarks/README.md §5.3 says which gate now owns which half of the signal.
+    #
+    # RENAMING A JOB SILENTLY UN-REQUIRES IT. GitHub matches a required status check by
+    # this `name:` string. If this name changes again, the ruleset in
+    # docs/21-Quality-Gates.md §7 has to change in the same commit, or the check goes
+    # from required to absent with nothing reporting that it did.
+    name: Benchmark budgets (B1, B3)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,6 +78,10 @@ jobs:
         # runner, as docs/benchmarks/README.md section 5 demonstrates with two runs
         # of the same commit. Add --strict once the baseline is recorded on
         # dedicated hardware (WP-11).
+        #
+        # Three entries declare `"gate": "none"` and are printed under "Measured here,
+        # gated elsewhere" on every run, passing ones included, with the job that owns
+        # each. Read that block: a green tick here is not a claim about them.
         run: python3 scripts/check-benchmark-budgets.py BenchmarkDotNet.Artifacts
 
       - name: Publish the report

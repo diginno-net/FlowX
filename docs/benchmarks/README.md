@@ -212,6 +212,13 @@ So the gate now splits by what is actually reproducible:
 | **Budget ceiling** | **blocking** | hard | The documented figure from 14-Performance. A four-step flow at 170 ns against 5 000 ns means an order-of-magnitude regression fails loudly. |
 | Absolute drift | advisory | ±40 % | Reported for a human. Not reliable here. |
 | Ratio drift | advisory | ±15 % | Same. |
+| Not gated here | reported | — | An entry may declare `"gate": "none"` with `gatedBy` naming the job that measures it instead. Its committed figures stay in the file and are printed beside the run's on every run. Without `gatedBy` it is a blocking error — §5.3. |
+
+*"The documented figure from 14-Performance" holds for every ceiling in the file but
+one.* `StepLoopBenchmarks.BuildPlan` carries **100 000 ns** under the label `build-time`,
+which 14-Performance does not list among its budgets; it sits 460× above the measured
+216 ns, so it has never been the thing that decides a run, and it is left in place rather
+than invented into a budget. §5.3 removes the other exception, which was deciding runs.
 
 The honest limitation: a **2× regression would not be caught** by these gates on this
 hardware. Only a 30× one would. That is why WP-11 re-records the baseline on
@@ -264,10 +271,10 @@ regression as after it"*. The **Benchmark budgets** job is the same failure in a
 form: not a gate too loose to fire, but a gate already firing for reasons nobody was
 acting on, so one more error line changed nothing anybody could see.
 
-It triggers on every push and pull request to `master` and `dev`, it is blocking, and it
-has been failing on `dev` continuously since at least run **#41** (2026-07-31 01:18,
-commit `1c654eb`) — sixty-odd consecutive pushes. That run named **three** blocking
-failures, and the failure path was not among them:
+It triggers on every push and pull request to `master` and `dev`, it exits 1 on a failure,
+and it did so on `dev` continuously from at least run **#41** (2026-07-31 01:18, commit
+`1c654eb`) — sixty-odd consecutive pushes. That run named **three** blocking failures, and
+the failure path was not among them:
 
 ```
 ::error::StepLoopBenchmarks.BuildPlan: allocated 528 B, baseline 520 B (allocation counts are exact)
@@ -282,15 +289,19 @@ of three — two more error lines on a job that had been red for two days, which
 visible than three. **Nothing else objected**: the two unit tests over this path assert
 `> 0` with a ceiling of 256 B and 2 048 B, and a band cannot see a number move inside it.
 
-What this commit closes, and what it deliberately does not:
+The five failures, and what closed each. *The last three rows read "**Open, and not
+re-recorded**" — deliberately, because moving four baselines in one commit to get a green
+tick is the behaviour that produced this section. What closed them is not a re-record:
+one of the three was a real regression the gate had correctly caught, and the other two
+were being gated in a place that could not gate them.*
 
 | Gate failure | Status |
 |---|---|
 | `EngineBenchmarks.SagaFailure` 40 → 56 B | **Resolved.** Cause bisected to `744b005` and `16b6988`, baseline restated above with the reason, and `UnwindingAllocatesOneIteratorPerFailedFlow` now pins the exact figure so the *Allocation budget (B2)* job — which is green and read — catches the next byte. |
 | `StepLoopBenchmarks.CompensateAll` 328 → 440 B | **Resolved.** Same root cause, same commit; 328 B reproduces exactly at `e6fcd37` and at `1c654eb`, and the new 440 B is reported by the container and by the hosted runner alike (run #104). |
 | `StepLoopBenchmarks.BuildPlan` 520 B committed | **Resolved, at 528 B, and the eight bytes are attributed.** The paragraph below this table replaces what this row used to say. |
-| `CompilerBenchmarks.GeneratorOnly` / `.WithGenerator` over their 15 % band | **Open, and not re-recorded.** These measure Roslyn plus the generator: **827 906 B** against a committed 588 937 B, and **2 257 176 B** against 1 508 524 B, with `WithGenerator` at **51.2 ms against a committed 11.2 ms**. That is compile-time cost, which is [B12-scale.md](B12-scale.md) §5.2's subject and `generator-cost`'s; re-recording it here would erase the evidence of a regression the project is tracking. |
-| `CompilerBenchmarks.WithGenerator` p95 over budget **B12** | **Open, and it is the budget ceiling rather than an allocation.** p95 **61.97 ms** against 60 ms — 3 % over, and it does not fire every run: the previous full run on the same commit and the same container measured 58.03 ms. It is the only blocking check here that is a timing check, and it sits close enough to its ceiling that this container decides it. Same subject as the row above. |
+| `CompilerBenchmarks.GeneratorOnly` / `.WithGenerator` over their 15 % band | **Resolved by removing the gate, not the numbers.** Both entries keep their committed figures and are now printed on every run as *measured, not gated*, with the job that owns each. §5.3. |
+| `CompilerBenchmarks.WithGenerator` p95 over budget **B12** | **Resolved with the row above, and it goes with it explicitly rather than quietly.** The 60 ms ceiling is gone because it was never a budget — see §5.3, which also records the four values this one check produced across one 60 ms line. |
 
 **`BuildPlan` was not irreproducible. It was right, and it was reporting a real
 regression that nobody read.** Its row above previously said the entry *"does not
@@ -321,13 +332,9 @@ than a flaky benchmark**: the entry is now 528 B, and
 `AllocationBudgetTests.BuildingAPlanAllocatesOncePerFlowAtStartup` pins it in the green
 *Allocation budget (B2)* job so the next byte fails on the pull request that adds it.
 
-So the job still exits 1, on the two `CompilerBenchmarks` allocation entries and the B12
-p95 ceiling — none of which are the engine, and none of which are re-recorded here.
-**Recorded rather than papered over**: the alternative on offer was to move four baselines
-in one commit and call the gate green, which is the behaviour that produced this section.
-
 Measured on the container this baseline was recorded on, Release, .NET 10.0.10, x64,
-after the three entries above were restated:
+after every entry above was restated — `python3 scripts/check-benchmark-budgets.py
+BenchmarkDotNet.Artifacts` exits **0** on this run:
 
 ```
 EngineBenchmarks.Query            242.20 ns     0 B
@@ -336,6 +343,78 @@ EngineBenchmarks.SagaFailure      423.57 ns    56 B    <- gate accepts
 StepLoopBenchmarks.CompensateAll  178.20 ns   440 B    <- gate accepts
 StepLoopBenchmarks.BuildPlan      216.52 ns   528 B    <- gate accepts
 ```
+
+### 5.3 Compile-time cost was gated in three places, and only one of them could pass
+
+The three `CompilerBenchmarks` entries sat in `baseline.json` for a reason that expired.
+When they were added at WP-14 this was the only benchmark harness in the repository, so
+every benchmark got a baseline row — that is what a baseline file was for. The gates that
+can actually hold compile-time cost were built afterwards and for the opposite reason:
+`Budget B12 — build overhead` at WP-14b and `generator-cost` at WP-31, both **relative**,
+because §5.1's whole argument is that an absolute gate on a budget you are failing reads
+the same before a regression as after it. Nobody went back and removed the older rows, so
+the same quantity ended up gated by a mechanism that had already been argued to be the
+wrong one — and, being unable to pass, it kept this job red, which is how §5.2 happened.
+
+What each of the three was gating, and who has it now:
+
+| Entry | What it gated | Who owns that signal now, and why that gate is better |
+|---|---|---|
+| `GeneratorOnly` allocations | bytes allocated by one `RunGeneratorsAndUpdateCompilation` call, at **one** flow, within ±15 %, from a single BenchmarkDotNet run | **`generator-cost`**, blocking, green. Literally the same quantity, at **25 and 50** flows, at **+2 %**, as the median of five runs after two discarded warm-ups, pinned to the Roslyn product version and to a hash of the sources. Verified to reject a fabricated +2.5 % and to fail the real `c7ae70a` at **+102 %**. |
+| `WithGenerator` allocations | the above **plus binding the generated output** | **`Budget B12 — build overhead`**, blocking, +8 % end-to-end against an identical non-FlowX build, and **`P1 scale`**, advisory, at 50 and 200 flows. Both build the output rather than only emitting it. `generator-cost` also reports emitted characters and raises a notice when they move. |
+| `WithoutGenerator` allocations | **Roslyn's own allocations**, compiling a file containing no FlowX at all | Nothing in this repository can move this number; a Roslyn upgrade can. `generator-cost` treats a moved Roslyn version as **blocking and exact** — re-record, never compare across it — which is the right response to the only thing that changes it. |
+| `WithGenerator` p95 vs 60 ms | a **budget ceiling that is not a budget** | Nobody, and nobody should. `60000000` ns appears in no document in this repository other than `baseline.json` itself. **B12's budget is `+8 %` relative build overhead** ([14-Performance](../14-Performance.md)), and a p95 on a single benchmark cannot express a ratio between two builds. |
+
+**What is genuinely lost.** One thing: a per-commit allocation band on binding the
+generated output at *one* flow. It could not fire usefully — the figure has moved 23 %
+since it was recorded, so the only ways to green it were to widen the band past the
+regression or to re-record the regression away — and both of the jobs that own the
+end-to-end signal are blocking. Nothing else: the other three columns are strictly better
+measured elsewhere, by gates that are already green and already read.
+
+**The numbers are not re-recorded, and that is the point.** The committed figures stay in
+`baseline.json` exactly as they were, and the gate now prints each of them beside what the
+run measured, on every run including passing ones — the same discipline
+`check-generator-cost.py` applies to the absolute criterion it cannot pass:
+
+```
+Measured here, gated elsewhere:
+  CompilerBenchmarks.GeneratorOnly — measured, not gated. 746058 B, p95 4.42 ms,
+    against 588937 B and 2.86 ms committed. Owned by: generator-cost ...
+```
+
+That gap is the evidence, and it survives. An entry may only opt out by naming the gate
+that took the signal; `"gate": "none"` without `gatedBy` is a **blocking** error, and the
+*The gate can fail* job asserts all three properties — that an ungated entry does not
+block, that it is still printed with its owner, and that the opt-out does not travel to
+its neighbours.
+
+**Why the flaky ceiling is not the argument.** §5.2 recorded the p95 at **61.97 ms** on
+one run and **58.03 ms** on the run before it, on the same commit and the same container.
+Two further runs recorded here measured **15.57 ms** and **16.99 ms**, with means of
+14.13 ms and 15.76 ms against the 51.2 ms the same source reported. So the failure did not
+merely straddle the line, it did not occur at all — four values spanning 4× across one
+60 ms mark, and which side of it a commit lands on is the container's decision rather than
+the commit's. *Those first two figures are quoted rather than reproduced, and this document
+no longer treats that source as settled: its `BuildPlan` measurements, taken in the same
+session, are the ones the table in §5.2 disproves.* None of that is load-bearing. A flaky
+gate is normally a reason to fix the measurement, and here there is nothing to fix — the
+line was not a budget in the first place. The flakiness is a symptom; §5.1 is the diagnosis.
+
+**Two runs of the three, on `a8e8f2b`, on the recording container**, so that the entries
+above are not the only place these numbers exist:
+
+| | Committed | Run A | Run B | Hosted runner, run #41, `1c654eb` |
+|---|---:|---:|---:|---:|
+| `WithoutGenerator` allocated | 678 312 B | 650 182 B | 649 409 B | *within its band, not printed* |
+| `GeneratorOnly` allocated | 588 937 B | **746 058 B** | **746 265 B** | **770 994 B** |
+| `WithGenerator` allocated | 1 508 524 B | **1 860 039 B** | **1 857 802 B** | **1 800 422 B** |
+| `WithGenerator` mean | 11.17 ms | 14.13 ms | 15.76 ms | — |
+
+Runs A and B agree with each other to **0.13 %** on all three allocation figures, which is
+worth saying plainly: the quantity is not noisy, it has simply *moved*, by +26.7 % and
++23.3 %, because the generator became more expensive. A 15 % band cannot be made to pass
+that without either widening past the regression or deleting it.
 
 ## 6. Caveats
 
