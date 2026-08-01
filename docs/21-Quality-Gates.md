@@ -592,11 +592,11 @@ is about, arrived at from the other side. Its workflow comment already says to r
 `continue-on-error` the moment [B12-scale.md](benchmarks/B12-scale.md) records a PASS.
 That is the commit in which it joins the list.
 
-**Renaming a job un-requires it, silently.** GitHub matches a required check by the job's
-`name:` string; a name that no longer exists is simply never reported, and a ruleset
-waiting for a check that will never arrive either blocks forever or — with
-*Require status checks to pass* configured the usual way — waves the pull request
-through. `Benchmark budgets (B1, B3, B12 isolated)` became `Benchmark budgets (B1, B3)`
+**Renaming a job breaks its requirement, silently.** GitHub matches a required check by
+the job's `name:` string, so a required name that no longer exists is never reported and
+every pull request sits waiting for a status that cannot arrive — while the job that
+replaced it runs, fails, and is required by nothing.
+`Benchmark budgets (B1, B3, B12 isolated)` became `Benchmark budgets (B1, B3)`
 in the commit that closed §5.3, so if the ruleset already exists it must be edited in the
 same change. The workflow carries the same warning next to the `name:` itself.
 
