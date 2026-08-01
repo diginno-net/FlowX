@@ -159,6 +159,17 @@ def judge_b8(document: dict, budget_ms: float, depth: int | None) -> dict:
             f"only {samples} of {prepared} prepared instances were rehydrated, so the arm "
             f"did not measure the population it reports.")
 
+    unfinished = arm.get("instancesLeftUnfinished", 0)
+
+    if unfinished:
+        return refusal(
+            "B8",
+            f"{unfinished} instance(s) were still Pending, Running or Compensating when the "
+            f"arm finished, so they were read back and not resumed. FlowRecoveryScan counts "
+            f"a takeover by whether this node became the writer, not by how the flow ended, "
+            f"so a fast read of an instance that then failed would otherwise be quoted as a "
+            f"met budget.")
+
     p99 = arm["rehydrationMs"]["p99"]
 
     detail = (

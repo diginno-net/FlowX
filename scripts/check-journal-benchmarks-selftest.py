@@ -87,6 +87,7 @@ def arm8(depth: int, p99: float) -> dict:
         "committedSteps": depth,
         "instances": 400,
         "rehydrationSamples": 400,
+        "instancesLeftUnfinished": 0,
         "rehydrationMs": {"p50": p99 / 3, "p95": p99 * 0.9, "p99": p99, "max": p99 * 2},
     }
 
@@ -128,6 +129,9 @@ def cases():
     def b8_measured_nothing(run: dict) -> None:
         run["b8"]["arms"] = []
 
+    def b8_left_an_instance_running(run: dict) -> None:
+        run["b8"]["arms"][0]["instancesLeftUnfinished"] = 1
+
     def both_fail_and_refuse(run: dict) -> None:
         b8_over_budget(run)
         b7_measured_nothing(run)
@@ -153,6 +157,8 @@ def cases():
          b8_short_population, "INCONCLUSIVE", ("PASS", "INCONCLUSIVE")),
         ("a run with no rehydration arm is refused", b8_measured_nothing,
          "INCONCLUSIVE", ("PASS", "INCONCLUSIVE")),
+        ("an arm that left an instance unfinished is refused, however fast it read",
+         b8_left_an_instance_running, "INCONCLUSIVE", ("PASS", "INCONCLUSIVE")),
         ("a failure outranks a refusal", both_fail_and_refuse, "FAIL",
          ("INCONCLUSIVE", "FAIL")),
     ]

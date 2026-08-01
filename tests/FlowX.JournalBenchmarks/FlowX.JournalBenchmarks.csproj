@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>FlowX.JournalBenchmarks</RootNamespace>
+
+    <!--
+      An Exe rather than a test project, and for the same reason tests/FlowX.Chaos is one:
+      this needs a real PostgreSQL, offers thousands of transactions a second at it, and
+      takes minutes. Joining the ordinary suite would make `dotnet test` a load test.
+
+      It is also not a BenchmarkDotNet project, which is the other place it could have gone.
+      BenchmarkDotNet runs a method in a closed loop and reports a distribution of that
+      loop; B7's budget is stated at an offered rate, and a closed loop cannot offer one —
+      it slows down exactly when the system does, which is the coordinated omission
+      docs/14-Performance.md 1.2 requires load tests not to have.
+    -->
+    <IsAotCompatible>false</IsAotCompatible>
+    <IsTrimmable>false</IsTrimmable>
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>false</EnableAotAnalyzer>
+
+    <!--
+      Server GC and a background thread pool, unlike tests/FlowX.Benchmarks, which turns
+      both off. The two projects are measuring different things: that one prices a
+      nanosecond-scale step loop, where a GC has to be kept out of the sample; this one
+      prices a millisecond-scale transaction under thousands of concurrent flows, which is
+      the configuration a durable node actually runs in.
+    -->
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+
+    <!--
+      CA1031 — a general catch. A run has to survive every way a flow, a socket or a
+      database can fail, because the harness dying half-way through is indistinguishable
+      from a measurement that never happened. Every catch here counts what it caught into
+      the results document; none swallows.
+
+      CA1303 — literal strings passed to Console. This harness prints a report, not a UI.
+    -->
+    <NoWarn>$(NoWarn);CA1031;CA1303</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      The host, because B8's subject is the resume path FlowRecoveryScan takes. A harness
+      that rehydrated an instance its own way would be measuring itself — the mistake
+      docs/benchmarks/QR2-chaos.md 1 names about every prior "kill" test here.
+    -->
+    <ProjectReference Include="../../src/FlowX.Hosting/FlowX.Hosting.csproj" />
+    <!--
+      The adapter, because "Postgres" is in B7's budget row and a synthetic INSERT is not
+      the transaction shape docs/11-Distributed-Runtime.md 5 specifies.
+    -->
+    <ProjectReference Include="../../plugins/FlowX.Postgres/FlowX.Postgres.csproj" />
+  </ItemGroup>
+
+</Project>
