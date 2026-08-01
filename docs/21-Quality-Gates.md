@@ -24,9 +24,15 @@ Three gate classes, in the order they run:
 | **Release gates** | every tag | the release does not ship |
 
 A gate that is routinely bypassed is worse than no gate: it teaches the team that
-red means "probably fine". There is no `continue-on-error` in this repository's
-CI, and no `// TODO: fix later` suppression without a linked issue and an expiry
-date — enforced by §6.
+red means "probably fine". There is no `// TODO: fix later` suppression without a
+linked issue and an expiry date — enforced by §6.
+
+*This paragraph also said "there is no `continue-on-error` in this repository's CI".
+There is exactly one, and it has been there since the job was written:
+`P1 scale — 200-flow build overhead` in `.github/workflows/performance.yml`. It is a
+declared, argued exception rather than an oversight — [§7.1](#71-what-makes-a-merge-class-gate-merge-class)
+says why it is not on the required list and what removes it — and a sentence claiming
+none exists is worth less than the exception it was hiding.*
 
 ---
 
@@ -499,9 +505,17 @@ register meaningless, which makes the budget unenforceable.
 
 Budgets live in [14-Performance](14-Performance.md). Their enforcement is here.
 
+> [!IMPORTANT]
+> **"Class: Merge" in the table below means the job blocks a *pull request* once
+> [§7.1](#71-what-makes-a-merge-class-gate-merge-class) is applied. It does not mean it
+> blocks one today.** Nothing in this repository can make a check required — that is a
+> repository setting, and it is not set. §7.1 says exactly which setting, where, and what
+> its two halves are for.
+
 | Gate | Rule | Class | State |
 |---|---|---|---|
-| B1, B3, B12 | allocation change vs `baseline.json`, or p95 over the documented ceiling, fails the build | Merge | **runs, and is currently red on `dev`** — *Benchmark budgets* job. Blocking and failing since at least run #41 on 2026-07-31, on three allocation entries that are not the engine's; see [benchmarks/README §5.2](benchmarks/README.md#52-the-gate-above-has-been-red-on-dev-and-that-is-why-16-bytes-got-in) for which, and for the sixteen bytes that crossed `dev` because a red gate is a gate nobody reads. Timing drift is measured and printed but **advisory**, see below |
+| B1, B3 | allocation change vs `baseline.json`, or p95 over the documented ceiling, fails the build | Merge | **runs, and exits 0** — *Benchmark budgets (B1, B3)* job. *This row read "runs, and is currently red on `dev`", and it had been red since at least run #41 on 2026-07-31. All three remaining failures are closed: `StepLoopBenchmarks.BuildPlan` was reporting a real 8 B change made at `60de884` and is restated at 528 B with the cause; the three `CompilerBenchmarks` entries measure compile-time cost and are handed to the two relative gates that already own it. The job also lost `B12 isolated` from its name, because it no longer renders a verdict on B12* — [benchmarks/README §5.2 and §5.3](benchmarks/README.md#52-the-gate-above-has-been-red-on-dev-and-that-is-why-16-bytes-got-in). Timing drift is measured and printed but **advisory**, see below |
+| B12 in the *Benchmark budgets* job | — | — | **removed, not silenced.** Its three entries keep their committed figures, are printed on every run beside what the run measured, and name the job that gates them now. A 15 % band on Roslyn's allocations and a 60 ms p95 ceiling written down in no budget document could not express B12's `+8 %`, and could not pass |
 | B2 | allocations must be **exactly 0** — not "low" | Merge | **runs** — `AllocationBudgetTests`, `EngineAllocationTests` |
 | Generator cost | > 2 % more bytes allocated by the generator than the committed baseline fails the build | Merge | **runs** — [generator-cost-gate.md](benchmarks/generator-cost-gate.md) |
 | B12 against its **+8 %** budget | — | — | **failing.** +46.6 % at 50 flows, +77 % at 200. The relative gate above stops it getting worse; it does not make the budget met |
@@ -533,6 +547,78 @@ already described this correctly; this table was the copy that had gone stale.
 
 A benchmark that becomes flaky is fixed or deleted, never muted. A muted
 benchmark is a budget nobody is holding.
+
+### 7.1 What makes a merge-class gate merge-class
+
+**Every "Merge" in the table above is aspirational until one repository setting exists,
+and this document is where that has to be said out loud.** The *Benchmark budgets* job
+was blocking in the only sense a workflow can be — it exited 1 — and it exited 1 on every
+push and every pull request to `master` and `dev` for two days while sixty-odd commits
+landed on top of it. Nothing stopped them, because nothing was configured to. That is the
+second half of the finding in [benchmarks/README §5.2](benchmarks/README.md#52-the-gate-above-has-been-red-on-dev-and-that-is-why-16-bytes-got-in),
+and no commit can close it.
+
+**The setting, precisely.** On `github.com/votrongdao/FlowX` → **Settings → Rules →
+Rulesets → New ruleset → New branch ruleset**:
+
+| Field | Value | Why this value |
+|---|---|---|
+| Ruleset name | `merge-class gates` | — |
+| Enforcement status | **Active** | `Evaluate` reports what *would* have been blocked and blocks nothing. A gate in evaluate mode is the state this section exists to end. |
+| Target branches | **Include by pattern**: `master` **and** `dev` | `.github/workflows/performance.yml` triggers on both. `dev` is not a staging area here — it is where the work lands. |
+| **Require a pull request before merging** | on, `1` approval or `0` as the project prefers | **This is the load-bearing half, and the non-obvious one.** Required status checks are evaluated against pull requests. A direct `git push` to a branch does not have a merge to block, so without this rule the check list below is decorative. Between 2026-07-31 and 2026-08-01, **37 of the 71 commits** that reached `dev` arrived without a pull request. |
+| **Require status checks to pass** | on, with the six checks listed below | The check is matched by the job's `name:` string, exactly. |
+| **Block force pushes** | on | A required check that a force push can rewrite past is not required. |
+| **Do not allow bypassing the above settings** | on, bypass list **empty** | An admin bypass that gets used is the same as no rule, and it leaves no row in this table false — which is worse, because the table then lies. |
+
+The six checks to register, as their exact job names:
+
+```
+Benchmark budgets (B1, B3)            .github/workflows/performance.yml
+Allocation budget (B2)                .github/workflows/performance.yml
+Budget B12 — build overhead           .github/workflows/performance.yml
+Generator cost vs the committed baseline
+                                      .github/workflows/performance.yml
+The gate can fail                     .github/workflows/performance.yml
+The generator-cost gate can fail      .github/workflows/performance.yml
+```
+
+**One job is deliberately not on that list.** `P1 scale — 200-flow build overhead`
+carries `continue-on-error: true` and is advisory by
+[ADR-0014](adr/ADR-0014-derived-error-catalogue-vs-build-budget.md) §4(4): it measures
+P1's *exit* criterion, which the project is currently failing, so requiring it would red
+every pull request for a defect none of them introduced — the failure mode this section
+is about, arrived at from the other side. Its workflow comment already says to remove
+`continue-on-error` the moment [B12-scale.md](benchmarks/B12-scale.md) records a PASS.
+That is the commit in which it joins the list.
+
+**Renaming a job un-requires it, silently.** GitHub matches a required check by the job's
+`name:` string; a name that no longer exists is simply never reported, and a ruleset
+waiting for a check that will never arrive either blocks forever or — with
+*Require status checks to pass* configured the usual way — waves the pull request
+through. `Benchmark budgets (B1, B3, B12 isolated)` became `Benchmark budgets (B1, B3)`
+in the commit that closed §5.3, so if the ruleset already exists it must be edited in the
+same change. The workflow carries the same warning next to the `name:` itself.
+
+**No in-repo mechanism is proposed to stand in for this, and that is a deliberate
+choice.** The gate step already emits `::error::` annotations, which GitHub surfaces on
+the run page and on the pull request without any further step; a summary step or a
+failure-notification job would make the red state marginally easier to *see*, and the
+thing that was missing was never visibility. It was consequence. Adding machinery that
+looks like enforcement while a merge still ignores the result would reproduce the exact
+error [§2.4](#24-gates-named-here-but-not-yet-enforced) exists to catalogue.
+
+**How to verify it took effect**, rather than believing this table:
+
+```bash
+gh api repos/votrongdao/FlowX/rulesets --jq '.[].name'
+gh api repos/votrongdao/FlowX/rulesets/<id> \
+  --jq '.rules[] | select(.type=="required_status_checks")
+        | .parameters.required_status_checks[].context'
+```
+
+Until those two commands print the ruleset and the six names, **this section's table
+describes an intention and §7's "Merge" column should be read as "runs".**
 
 ---
 
