@@ -63,7 +63,7 @@ jobs:
           sys.exit(1 if bad else 0)
           PY
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: coverage
@@ -165,7 +165,7 @@ jobs:
             --test-project ../../tests/FlowX.Core.Tests/FlowX.Core.Tests.csproj \
             --break-at 70 --reporter progress --reporter html
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: mutation-report
