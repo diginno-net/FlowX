@@ -34,7 +34,7 @@ jobs:
     name: Allocation budget (B2, and B6's allocation half)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
@@ -56,7 +56,7 @@ jobs:
     name: Benchmark budgets (B1, B3, B12 isolated)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
@@ -95,7 +95,7 @@ jobs:
     name: Budget B12 — build overhead
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
@@ -146,7 +146,7 @@ jobs:
     # is a wall-clock question, `scale-overhead` is the instrument for it, and it fails.
     # The checker reprints that criterion on every run, including passing ones.
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
@@ -233,7 +233,7 @@ jobs:
     name: The generator-cost gate can fail
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: A regression under the threshold must fail the gate
         # A gate nobody has seen fail is an assumption, not a gate — the same argument
@@ -324,7 +324,7 @@ jobs:
     #   esac
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
@@ -358,7 +358,7 @@ jobs:
     name: The gate can fail
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Injecting a regression must fail the gate
         # A gate nobody has seen fail is an assumption, not a gate. This builds a

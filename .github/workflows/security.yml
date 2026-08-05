@@ -23,7 +23,7 @@ jobs:
       security-events: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
@@ -52,7 +52,7 @@ jobs:
     container:
       image: semgrep/semgrep
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Scan
         # OWASP + C# rulesets. --error makes any ERROR-severity finding fail the job;
         # a security scanner that only warns is a scanner nobody reads.
@@ -95,7 +95,7 @@ jobs:
     name: Secret scanning
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0   # gitleaks scans history, not just the diff
       - uses: gitleaks/gitleaks-action@v2
@@ -106,7 +106,7 @@ jobs:
     name: "SCA: vulnerable packages"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
@@ -139,7 +139,7 @@ jobs:
     name: IaC scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Checkov
         # Skipped cleanly while there are no manifests yet, rather than failing
         # on an empty directory and training everyone to ignore this job.
@@ -163,7 +163,7 @@ jobs:
       contents: read
       issues: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Skip until a sample exists
         id: guard
@@ -240,7 +240,7 @@ jobs:
       contents: read
       security-events: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: The backlog has not grown
         # WHAT THIS EXISTS FOR. `github/codeql-action/analyze` uploads every alert the

@@ -68,7 +68,7 @@ jobs:
         ports:
           - 1433:1433
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
@@ -233,7 +233,7 @@ jobs:
     # missing secret would just teach contributors that red is normal.
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0   # Sonar needs history for new-code detection
 
@@ -297,7 +297,7 @@ jobs:
     # a failure somebody looks at.
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
@@ -349,7 +349,7 @@ jobs:
     # a rule that already has one — to be kept in step by hand, forever, with no
     # test that they agree.
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: No unaccountable TODOs
         # Every tree that ships or is read as an example, not just src and tests. A
