@@ -217,7 +217,7 @@ jobs:
 
       - name: ZAP baseline scan
         if: steps.guard.outputs.ready == 'true'
-        uses: zaproxy/action-baseline@v0.12.0
+        uses: zaproxy/action-baseline@v0.15.0
         with:
           # /health rather than `/`, because that is a URL this application has. What the
           # spider can reach from it is one GET: the rest of the surface is POST-only, and
