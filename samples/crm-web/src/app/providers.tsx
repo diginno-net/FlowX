@@ -3,6 +3,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { ApiError } from '@/api/client'
 import { SessionProvider } from '@/session/SessionProvider'
+import { LocaleProvider } from './LocaleProvider'
 import { ToastProvider } from './ToastProvider'
 
 /**
@@ -39,10 +40,12 @@ export function AppProviders({ children }: { children: ReactNode }) {
   const [client] = useState(createQueryClient)
 
   return (
-    <QueryClientProvider client={client}>
-      <SessionProvider>
-        <ToastProvider>{children}</ToastProvider>
-      </SessionProvider>
-    </QueryClientProvider>
+    <LocaleProvider>
+      <QueryClientProvider client={client}>
+        <SessionProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </SessionProvider>
+      </QueryClientProvider>
+    </LocaleProvider>
   )
 }

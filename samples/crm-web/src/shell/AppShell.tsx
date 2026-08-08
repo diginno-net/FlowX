@@ -1,11 +1,11 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Link, Outlet, useNavigate, useRouterState } from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Button, ButtonGroup } from '@/design/primitives/Button'
 import { cx } from '@/lib/cx'
 import { PERSONAS, useSession } from '@/session/SessionProvider'
-import type { Persona } from '@/session/SessionProvider'
 import { APPS, OBJECTS, SETUP_APP, appForPath } from './navigation'
+import { ProfileDrawer } from './ProfileDrawer'
 import styles from './AppShell.module.css'
 
 /**
@@ -51,6 +51,8 @@ export function AppShell() {
 }
 
 function TopBar({ currentApp }: { currentApp: string }) {
+  const { t } = useLingui()
+  const [profileOpen, setProfileOpen] = useState(false)
   const session = useSession()
   const navigate = useNavigate()
   const app = [...APPS, SETUP_APP].find((candidate) => candidate.id === currentApp)
@@ -62,74 +64,61 @@ function TopBar({ currentApp }: { currentApp: string }) {
           GoK
         </div>
         <div className={styles.brandRule} />
-        <div className={styles.appLabel}>{app?.label ?? 'Sales Cloud'}</div>
+        <div className={styles.appLabel}>{app ? t(app.label) : ''}</div>
       </div>
 
       <button type="button" className={styles.search} onClick={() => void navigate({ to: '/search' })}>
         <span className={styles.searchGlyph} aria-hidden="true">
           ⌕
         </span>
-        <span>Search accounts, contacts, opportunities…</span>
+        <span>
+          <Trans>Search accounts, contacts, opportunities…</Trans>
+        </span>
         <span className={styles.kbd} aria-hidden="true">
           ⌘K
         </span>
       </button>
-
-      <ButtonGroup label="Signed-in role" className={styles.personas}>
-        {PERSONAS.map((persona) => (
-          <Button
-            key={persona.id}
-            aria-pressed={session.persona === persona.id}
-            onClick={() => switchPersona(persona.id)}
-          >
-            {persona.label}
-          </Button>
-        ))}
-      </ButtonGroup>
 
       {/*
         THREE GLYPHS THAT LOOKED LIKE CONTROLS SAT HERE — a notification bell, a home and a help
         mark, drawn from the mock-up, none of them clickable and none of them behind anything.
         A reader who tries one and gets nothing has learnt that this application's chrome does not
         respond, which is the wrong thing to have taught them before they reach a real control.
+
+        THE ROLE PICKER AND THE LANGUAGE CONTROL WENT THE SAME WAY, into the profile the avatar
+        opens — two segmented pickers on one strip is one more than the strip has room for, and
+        neither is a thing anybody presses twice in a session.
       */}
+
       <div className={styles.topbarEnd}>
-        <div className={styles.avatar} title={`${session.displayName} · signed in as ${session.persona}`}>
+        <button
+          type="button"
+          className={styles.avatar}
+          aria-haspopup="dialog"
+          aria-expanded={profileOpen}
+          title={t`${session.displayName} · signed in as ${session.persona}`}
+          onClick={() => setProfileOpen(true)}
+        >
           {session.initials}
-        </div>
+        </button>
       </div>
+
+      {profileOpen ? <ProfileDrawer onClose={() => setProfileOpen(false)} /> : null}
     </header>
   )
 
-  /**
-   * Switching persona also lands where that persona starts, as the prototype does — a director
-   * dropped on a seller's console has to navigate before they see anything of theirs.
-   */
-  function switchPersona(persona: Persona) {
-    session.switchTo(persona)
-
-    const home =
-      persona === 'admin'
-        ? '/setup'
-        : persona === 'director'
-          ? '/exec'
-          : persona === 'manager'
-            ? '/plan/portfolio'
-            : '/'
-
-    void navigate({ to: home })
-  }
 }
 
 function AppRail({ currentApp }: { currentApp: string }) {
+  const { t } = useLingui()
   const session = useSession()
 
   return (
-    <nav className={styles.rail} aria-label="Applications">
+    <nav className={styles.rail} aria-label={t`Applications`}>
       {APPS.map((app) => (
-        <RailLink key={app.id} to={app.to} label={app.label} current={currentApp === app.id}>
+        <RailLink key={app.id} to={app.to} label={t(app.label)} current={currentApp === app.id}>
           <RailIcon path={app.icon} />
-          <span className={styles.railLabel}>{app.short}</span>
+          <span className={styles.railLabel}>{t(app.short)}</span>
         </RailLink>
       ))}
 
@@ -203,13 +192,14 @@ function RailIcon({ path }: { path: string }) {
 }
 
 function TabStrip() {
+  const { t } = useLingui()
   const { tenantId } = useSession()
   const pathname = useRouterState({ select: (state) => state.location.pathname })
 
   return (
-    <nav className={styles.tabs} aria-label="Record types">
+    <nav className={styles.tabs} aria-label={t`Record types`}>
       <Link to="/" className={styles.tab} aria-current={pathname === '/' ? 'page' : undefined}>
-        Home
+        <Trans>Home</Trans>
       </Link>
       {OBJECTS.map((object) => (
         <Link
@@ -219,7 +209,7 @@ function TabStrip() {
           className={styles.tab}
           aria-current={pathname.startsWith(`/records/${object.key}`) ? 'page' : undefined}
         >
-          {object.plural}
+          {t(object.plural)}
         </Link>
       ))}
       <Link
@@ -227,14 +217,14 @@ function TabStrip() {
         className={cx(styles.tab)}
         aria-current={pathname.startsWith('/analytics') ? 'page' : undefined}
       >
-        Reports
+        <Trans>Reports</Trans>
       </Link>
       <Link
         to="/setup"
         className={styles.tab}
         aria-current={pathname.startsWith('/setup') ? 'page' : undefined}
       >
-        Setup
+        <Trans>Setup</Trans>
       </Link>
 
       {/*

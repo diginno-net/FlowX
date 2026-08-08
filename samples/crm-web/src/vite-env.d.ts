@@ -12,3 +12,8 @@ declare module '*.module.css' {
   const classes: Readonly<Record<string, string>>
   export default classes
 }
+
+// Catalogues are compiled by @lingui/vite-plugin, which serves them as a module.
+declare module '*.po' {
+  export const messages: Record<string, string>
+}

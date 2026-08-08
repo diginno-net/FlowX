@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Link, useNavigate } from '@tanstack/react-router'
 import {
   Button,
@@ -35,6 +36,7 @@ import styles from './ConsoleScreen.module.css'
  * tile that quietly disagrees with the funnel beneath it the first time a filter is added.
  */
 export function ConsoleScreen() {
+  const { t } = useLingui()
   const navigate = useNavigate()
   const console = useConsole()
 
@@ -89,7 +91,7 @@ export function ConsoleScreen() {
     <Page>
       <PageHeader
         eyebrow="Sales console — quarter to date"
-        title="Pipeline overview"
+        title={t`Pipeline overview`}
         actions={
           <>
             {/*
@@ -106,16 +108,16 @@ export function ConsoleScreen() {
             */}
             <Button
               size="lg"
-              title="Opens the lead list — a conversion starts from a lead."
+              title={t`Opens the lead list — a conversion starts from a lead.`}
               onClick={() => void navigate({ to: '/records/$object', params: { object: 'lead' } })}
             >
-              Convert a lead
+              <Trans>Convert a lead</Trans>
             </Button>
             <Button size="lg" onClick={() => void navigate({ to: '/kanban' })}>
-              Kanban
+              <Trans>Kanban</Trans>
             </Button>
             <Button size="lg" tone="primary" onClick={() => void navigate({ to: '/exec/board' })}>
-              Executive board
+              <Trans>Executive board</Trans>
             </Button>
           </>
         }
@@ -126,7 +128,7 @@ export function ConsoleScreen() {
           <>
             <span>
               {console.activeCount === 0
-                ? 'Showing the default view'
+                ? t`Showing the default view`
                 : `${console.activeCount} filter${console.activeCount === 1 ? '' : 's'} applied · ${console.open.length} open`}
             </span>
             {/*
@@ -138,31 +140,31 @@ export function ConsoleScreen() {
               size="sm"
               pill
               disabled={console.activeCount === 0}
-              title={console.activeCount === 0 ? 'No filters are applied.' : undefined}
+              title={console.activeCount === 0 ? t`No filters are applied.` : undefined}
               onClick={console.clear}
             >
-              Clear
+              <Trans>Clear</Trans>
             </Button>
           </>
         }
       >
         <FilterGroup
-          label="Owner"
+          label={t`Owner`}
           selected={console.filters.owner}
           onSelect={(value) => console.setFilter('owner', value)}
           options={[
-            { value: 'mine', label: 'Mine' },
-            { value: 'all', label: 'Everyone' },
+            { value: 'mine', label: t`Mine` },
+            { value: 'all', label: t`Everyone` },
           ]}
         />
         <FilterGroup
-          label="Close"
+          label={t`Close`}
           selected={console.filters.horizon}
           onSelect={(value) => console.setFilter('horizon', value)}
           options={[
-            { value: 'quarter', label: 'This quarter' },
-            { value: 'month', label: 'This month' },
-            { value: 'open', label: 'All open' },
+            { value: 'quarter', label: t`This quarter` },
+            { value: 'month', label: t`This month` },
+            { value: 'open', label: t`All open` },
           ]}
         />
         {/*
@@ -171,14 +173,14 @@ export function ConsoleScreen() {
           rows. What a deal carries is an outcome, which is null while it is open.
         */}
         <FilterGroup
-          label="Outcome"
+          label={t`Outcome`}
           selected={console.filters.outcome}
           onSelect={(value) => console.setFilter('outcome', value)}
           options={[
-            { value: 'open', label: 'Open' },
-            { value: 'Won', label: 'Won' },
-            { value: 'Lost', label: 'Lost' },
-            { value: 'all', label: 'All' },
+            { value: 'open', label: t`Open` },
+            { value: 'Won', label: t`Won` },
+            { value: 'Lost', label: t`Lost` },
+            { value: 'all', label: t`All` },
           ]}
         />
       </FilterBar>
@@ -192,24 +194,24 @@ export function ConsoleScreen() {
       */}
       <StatGrid columns={5}>
         <StatTile
-          label="Open pipeline"
+          label={t`Open pipeline`}
           value={money(console.openValue)}
-          note="open deals in this filter"
+          note={t`open deals in this filter`}
           drillLabel="the open pipeline"
           onActivate={deals}
         />
         <StatTile
-          label="Weighted"
+          label={t`Weighted`}
           value={money(console.weightedValue)}
           note="amount × probability, deal by deal"
           drillLabel="the deals behind it"
           onActivate={deals}
         />
         <StatTile
-          label="Closed won QTD"
+          label={t`Closed won QTD`}
           value={money(console.wonValue)}
-          note="won, in this filter"
-          drillLabel="the deals behind it"
+          note={t`won, in this filter`}
+          drillLabel={t`the deals behind it`}
           onActivate={deals}
         />
         {/*
@@ -219,14 +221,14 @@ export function ConsoleScreen() {
           own rows can answer.
         */}
         <StatTile
-          label="Open deals"
+          label={t`Open deals`}
           value={console.open.length}
-          note="in this filter"
-          drillLabel="the deals behind it"
+          note={t`in this filter`}
+          drillLabel={t`the deals behind it`}
           onActivate={deals}
         />
         <StatTile
-          label="Tasks open"
+          label={t`Tasks open`}
           value={console.tasks.length}
           delta={console.overdueTasks > 0 ? `${console.overdueTasks} overdue` : undefined}
           direction={console.overdueTasks > 0 ? 'down' : 'flat'}
@@ -238,7 +240,7 @@ export function ConsoleScreen() {
 
       <Panel padding="flush" className={styles.rhythm}>
         <PanelHeader
-          title="Rhythm"
+          title={t`Rhythm`}
           note="what this tenant's rows say"
           actions={
             <Button size="sm" onClick={() => void navigate({ to: '/exec/deal-performance' })}>
@@ -261,38 +263,38 @@ export function ConsoleScreen() {
         <StatStrip
           cells={[
             {
-              label: 'Open',
+              label: t`Open`,
               value: String(console.open.length),
               fraction: fraction(console.open.length, console.open.length + console.won.length),
-              note: 'in this filter',
+              note: t`in this filter`,
             },
             {
-              label: 'Won',
+              label: t`Won`,
               value: String(console.won.length),
               fraction: fraction(console.won.length, console.open.length + console.won.length),
-              note: 'in this filter',
+              note: t`in this filter`,
             },
             {
-              label: 'Closing this month',
+              label: t`Closing this month`,
               value: String(console.closingThisMonth.length),
               fraction: fraction(console.closingThisMonth.length, console.open.length),
               note: 'of the open ones',
             },
             {
-              label: 'Weighted',
+              label: t`Weighted`,
               value: money(console.weightedValue),
               fraction: fraction(console.weightedValue, console.openValue),
               note: 'of the open pipeline',
             },
             {
-              label: 'Tasks open',
+              label: t`Tasks open`,
               value: String(console.tasks.length),
               fraction: fraction(console.tasks.length - console.overdueTasks, console.tasks.length),
               note: `${console.overdueTasks} overdue`,
               direction: console.overdueTasks > 0 ? ('down' as const) : ('flat' as const),
             },
             {
-              label: 'Largest open',
+              label: t`Largest open`,
               value: money(Math.max(0, ...console.open.map((deal) => deal.amount))),
               fraction: 1,
               note: 'single deal',
@@ -303,16 +305,16 @@ export function ConsoleScreen() {
         <div className={styles.rhythmBody}>
           <div className={styles.rhythmCharts}>
             <div>
-              <div className={styles.chartLabel}>Open work by kind</div>
+              <div className={styles.chartLabel}><Trans>Open work by kind</Trans></div>
               <StackedBars
                 caption="Open activities by kind"
-                series={[{ label: 'Open', colour: 'var(--color-accent)' }]}
+                series={[{ label: t`Open`, colour: 'var(--color-accent)' }]}
                 bars={byKind(console.tasks)}
               />
             </div>
 
             <div className={styles.movement}>
-              <div className={styles.chartLabel}>Open pipeline by likelihood</div>
+              <div className={styles.chartLabel}><Trans>Open pipeline by likelihood</Trans></div>
               <div className={styles.movementHead}>
                 <span className={styles.movementNet}>{money(console.weightedValue)}</span>
                 <span className={styles.movementNote}>
@@ -320,7 +322,7 @@ export function ConsoleScreen() {
                 </span>
               </div>
               <StackedBars
-                caption="Open pipeline by probability band"
+                caption={t`Open pipeline by probability band`}
                 series={[{ label: 'Amount', colour: 'var(--color-accent-800)' }]}
                 bars={byLikelihood(console.open)}
               />
@@ -329,8 +331,8 @@ export function ConsoleScreen() {
 
           <div className={styles.rhythmList}>
             <div className={styles.chartLabel}>
-              Largest open
-              <span className={styles.chartNote}>in this filter</span>
+              <Trans>Largest open</Trans>
+              <span className={styles.chartNote}><Trans>in this filter</Trans></span>
             </div>
             <ol className={styles.timeline}>
               {[...console.open]
@@ -355,7 +357,7 @@ export function ConsoleScreen() {
                   </li>
                 ))}
               {console.open.length === 0 ? (
-                <li className={styles.sub}>Nothing is open in this filter.</li>
+                <li className={styles.sub}><Trans>Nothing is open in this filter.</Trans></li>
               ) : null}
             </ol>
           </div>
@@ -365,14 +367,14 @@ export function ConsoleScreen() {
       <Columns layout="split">
         <Panel>
           <div className={styles.panelHead}>
-            <h2 className={styles.panelTitle}>Pipeline by stage</h2>
+            <h2 className={styles.panelTitle}><Trans>Pipeline by stage</Trans></h2>
             <span className={styles.sub}>open opportunities · weighted</span>
             <Link to="/kanban" className={styles.panelLink}>
               Open kanban →
             </Link>
           </div>
           <Funnel
-            caption="Open pipeline by stage"
+            caption={t`Open pipeline by stage`}
             stages={console.totals.map((total) => ({
               name: total.stage,
               value: total.sum,
@@ -385,8 +387,8 @@ export function ConsoleScreen() {
 
         <Panel>
           <div className={styles.panelHead}>
-            <h2 className={styles.panelTitle}>Attainment</h2>
-            <span className={styles.sub}>against the assigned number</span>
+            <h2 className={styles.panelTitle}><Trans>Attainment</Trans></h2>
+            <span className={styles.sub}><Trans>against the assigned number</Trans></span>
             <Link to="/exec/sales-performance" className={styles.panelLink}>
               Sales performance →
             </Link>
@@ -465,7 +467,7 @@ export function ConsoleScreen() {
                 params: { object: 'opportunity', id: row.id },
               })
             }
-            empty="Nothing in this filter closes before the end of the month."
+            empty={t`Nothing in this filter closes before the end of the month.`}
           />
         </Panel>
 
@@ -486,7 +488,7 @@ export function ConsoleScreen() {
               </div>
             ))}
             {console.tasks.length === 0 ? (
-              <p className={styles.sub}>Nothing is open against this tenant.</p>
+              <p className={styles.sub}><Trans>Nothing is open against this tenant.</Trans></p>
             ) : null}
           </PanelBody>
         </Panel>

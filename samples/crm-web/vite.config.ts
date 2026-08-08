@@ -1,4 +1,5 @@
 import { fileURLToPath, URL } from 'node:url'
+import { lingui } from '@lingui/vite-plugin'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
@@ -8,7 +9,12 @@ import { defineConfig } from 'vite'
 const API = process.env.CRM_API ?? 'http://localhost:5000'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    // The macro rewrites `t`…`` into a catalogue lookup at build time, so no string is
+    // resolved by scanning at run time.
+    react({ babel: { plugins: ['@lingui/babel-plugin-lingui-macro'] } }),
+    lingui(),
+  ],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   server: {
     port: 5173,
