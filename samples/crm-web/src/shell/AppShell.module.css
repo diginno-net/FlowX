@@ -125,9 +125,40 @@
   place-items: center;
   font-family: var(--font-heading);
   font-size: 13px;
+
+  /*
+   * IT IS A BUTTON AND HAS TO LOOK LIKE ONE. This was a `<div>` with a `title`, and when it
+   * became the way into the profile it kept a `<div>`'s cursor: hovering it said nothing, so a
+   * reader who was told the profile lives here still had no reason to believe the square was
+   * where. A control nobody can tell is a control is a control nobody presses.
+   */
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: box-shadow var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.avatar:hover {
+  box-shadow: var(--focus-ring);
+}
+
+.avatar:active {
+  transform: scale(0.94);
+}
+
+.avatar:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .topbarEnd {
+  /*
+   * Pushed to the far edge. `.personas` carried this and the profile took the role picker with
+   * it, so removing that run of buttons left the avatar floating beside the search box with the
+   * right half of the bar empty behind it — which reads as decoration, not as the way in.
+   */
+  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 13px;

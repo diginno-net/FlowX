@@ -13,6 +13,7 @@
 }
 
 .panel {
+  transition: width var(--motion-fast) var(--motion-ease);
   position: relative;
   width: var(--drawer-width, 452px);
   max-width: 100%;
@@ -135,4 +136,10 @@
   align-items: center;
   gap: 4px;
   margin-left: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    transition: none;
+  }
 }

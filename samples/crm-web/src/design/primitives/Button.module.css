@@ -14,6 +14,31 @@
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   padding: 0 14px;
+
+  /*
+   * A KEYBOARD HAS TO SEE WHERE IT IS. There was no focus rule anywhere in this file, so tabbing
+   * through a screen showed whatever the browser draws by default — which several of them draw
+   * as nothing at all against a coloured button. `:focus-visible` rather than `:focus`, so a
+   * mouse press does not leave a ring behind on a button that has already done its job.
+   */
+  transition: background var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/*
+ * Motion is the first thing to go for a reader who has asked for less of it. The states still
+ * change — they just arrive rather than travel, which is the distinction the preference makes.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
 }
 
 .btn:disabled {
