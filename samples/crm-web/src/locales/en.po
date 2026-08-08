@@ -6,6 +6,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. placeholder {0}: session.displayName
+#. placeholder {1}: session.persona
+#: src/shell/AppShell.tsx
+msgid "{0} · signed in as {1}"
+msgstr "{0} · signed in as {1}"
 
 #: src/shell/navigation.ts
 msgctxt "a company this CRM sells to — not a login account"
@@ -37,6 +49,10 @@ msgstr "Analytics"
 #: src/shell/AppShell.tsx
 msgid "Applications"
 msgstr "Applications"
+
+#: src/shell/ProfileDrawer.tsx
+msgid "Applies to this browser only. Record data keeps the language it was written in."
+msgstr "Applies to this browser only. Record data keeps the language it was written in."
 
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Attainment"
@@ -102,7 +118,7 @@ msgstr "in this filter"
 msgid "Kanban"
 msgstr "Kanban"
 
-#: src/shell/AppShell.tsx
+#: src/shell/ProfileDrawer.tsx
 msgid "Language"
 msgstr "Language"
 
@@ -132,6 +148,10 @@ msgstr "Mine"
 msgctxt "the current person’s own queue"
 msgid "My work"
 msgstr "My work"
+
+#: src/shell/ProfileDrawer.tsx
+msgid "No grants. Every write is refused."
+msgstr "No grants. Every write is refused."
 
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Nothing in this filter closes before the end of the month."
@@ -213,6 +233,10 @@ msgctxt "account and territory planning"
 msgid "Planning"
 msgstr "Planning"
 
+#: src/shell/ProfileDrawer.tsx
+msgid "Profile"
+msgstr "Profile"
+
 #: src/shell/navigation.ts
 msgctxt "a priced proposal"
 msgid "Quote"
@@ -234,6 +258,10 @@ msgstr "Reports"
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Rhythm"
 msgstr "Rhythm"
+
+#: src/shell/ProfileDrawer.tsx
+msgid "Role"
+msgstr "Role"
 
 #: src/shell/navigation.ts
 msgctxt "rail glyph label for Analytics"
@@ -281,7 +309,12 @@ msgstr "Setup"
 msgid "Showing the default view"
 msgstr "Showing the default view"
 
-#: src/shell/AppShell.tsx
+#. placeholder {0}: session.tenantId
+#: src/shell/ProfileDrawer.tsx
+msgid "Signed in to {0}"
+msgstr "Signed in to {0}"
+
+#: src/shell/ProfileDrawer.tsx
 msgid "Signed-in role"
 msgstr "Signed-in role"
 
@@ -304,6 +337,10 @@ msgstr "Tasks"
 msgid "Tasks open"
 msgstr "Tasks open"
 
+#: src/shell/ProfileDrawer.tsx
+msgid "The sample mints one token per role. Switching changes which token every request carries — not what the screen hides."
+msgstr "The sample mints one token per role. Switching changes which token every request carries — not what the screen hides."
+
 #: src/features/sales/ConsoleScreen.tsx
 msgid "This month"
 msgstr "This month"
@@ -315,6 +352,10 @@ msgstr "This quarter"
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Weighted"
 msgstr "Weighted"
+
+#: src/shell/ProfileDrawer.tsx
+msgid "What this role holds"
+msgstr "What this role holds"
 
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Won"

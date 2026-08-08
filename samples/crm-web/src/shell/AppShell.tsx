@@ -1,15 +1,11 @@
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Link, Outlet, useNavigate, useRouterState } from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Button, ButtonGroup } from '@/design/primitives/Button'
 import { cx } from '@/lib/cx'
-import { PERSONAS, useSession } from '@/session/SessionProvider'
-import type { Persona } from '@/session/SessionProvider'
-import { useLocale } from '@/app/LocaleProvider'
-import { LOCALES } from '@/lib/i18n'
-import type { Locale } from '@/lib/i18n'
+import { useSession } from '@/session/SessionProvider'
 import { APPS, OBJECTS, SETUP_APP, appForPath } from './navigation'
+import { ProfileDrawer } from './ProfileDrawer'
 import styles from './AppShell.module.css'
 
 /**
@@ -56,6 +52,7 @@ export function AppShell() {
 
 function TopBar({ currentApp }: { currentApp: string }) {
   const { t } = useLingui()
+  const [profileOpen, setProfileOpen] = useState(false)
   const session = useSession()
   const navigate = useNavigate()
   const app = [...APPS, SETUP_APP].find((candidate) => candidate.id === currentApp)
@@ -82,83 +79,34 @@ function TopBar({ currentApp }: { currentApp: string }) {
         </span>
       </button>
 
-      <ButtonGroup label={t`Signed-in role`} className={styles.personas}>
-        {PERSONAS.map((persona) => (
-          <Button
-            key={persona.id}
-            aria-pressed={session.persona === persona.id}
-            onClick={() => switchPersona(persona.id)}
-          >
-            {persona.label}
-          </Button>
-        ))}
-      </ButtonGroup>
-
       {/*
         THREE GLYPHS THAT LOOKED LIKE CONTROLS SAT HERE — a notification bell, a home and a help
         mark, drawn from the mock-up, none of them clickable and none of them behind anything.
         A reader who tries one and gets nothing has learnt that this application's chrome does not
         respond, which is the wrong thing to have taught them before they reach a real control.
+
+        THE ROLE PICKER AND THE LANGUAGE CONTROL WENT THE SAME WAY, into the profile the avatar
+        opens — two segmented pickers on one strip is one more than the strip has room for, and
+        neither is a thing anybody presses twice in a session.
       */}
 
-      <LocaleSwitch />
-
       <div className={styles.topbarEnd}>
-        <div className={styles.avatar} title={`${session.displayName} · signed in as ${session.persona}`}>
+        <button
+          type="button"
+          className={styles.avatar}
+          aria-haspopup="dialog"
+          aria-expanded={profileOpen}
+          title={t`${session.displayName} · signed in as ${session.persona}`}
+          onClick={() => setProfileOpen(true)}
+        >
           {session.initials}
-        </div>
+        </button>
       </div>
+
+      {profileOpen ? <ProfileDrawer onClose={() => setProfileOpen(false)} /> : null}
     </header>
   )
 
-  /**
-   * Switching persona also lands where that persona starts, as the prototype does — a director
-   * dropped on a seller's console has to navigate before they see anything of theirs.
-   */
-  function switchPersona(persona: Persona) {
-    session.switchTo(persona)
-
-    const home =
-      persona === 'admin'
-        ? '/setup'
-        : persona === 'director'
-          ? '/exec'
-          : persona === 'manager'
-            ? '/plan/portfolio'
-            : '/'
-
-    void navigate({ to: home })
-  }
-}
-
-/**
- * The language control.
- *
- * A GROUP OF BUTTONS RATHER THAN A `<select>`, to match the role switcher beside it: two locales
- * is a choice you can see, and a dropdown would hide the one you are not in. It moves to a
- * `<select>` at the locale that does not fit on the bar — not before.
- *
- * `lang` on each button is what stops a screen reader announcing "Tiếng Việt" with an English
- * voice while the surrounding chrome is still English.
- */
-function LocaleSwitch() {
-  const { locale, setLocale } = useLocale()
-  const { t } = useLingui()
-
-  return (
-    <ButtonGroup label={t`Language`}>
-      {(Object.entries(LOCALES) as [Locale, string][]).map(([code, name]) => (
-        <Button
-          key={code}
-          lang={code}
-          aria-pressed={locale === code}
-          onClick={() => setLocale(code)}
-        >
-          {name}
-        </Button>
-      ))}
-    </ButtonGroup>
-  )
 }
 
 function AppRail({ currentApp }: { currentApp: string }) {
