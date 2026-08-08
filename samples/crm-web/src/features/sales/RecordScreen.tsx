@@ -11,7 +11,7 @@ import {
   Skeleton,
   Tabs,
 } from '@/design/primitives'
-import { useEntityPage, useEntityRecord, useProcess } from '@/api/queries/hooks'
+import { useEntityPage, useEntityRecord, useProcess, useSchema } from '@/api/queries/hooks'
 import { modelFor } from '@/fixtures/objects'
 import { renderCell } from './RecordCell'
 import { entityOf, keyColumnOf, toRows } from './liveRecords'
@@ -38,7 +38,14 @@ type RecordTab = 'details' | 'related' | 'activity' | 'files'
  * appears here, and a record in a stage the model does not have is visibly in none of them rather
  * than silently drawn as the first.
  */
-/** The kinds a custom field can be declared on, which is what the edit drawer writes. */
+/**
+ * The kinds a custom field can be declared *on*, which is not the same as the kinds that have one.
+ *
+ * Membership here is necessary for Edit to do anything and nowhere near sufficient: a tenant that
+ * has declared nothing on contacts has an Edit that opens a drawer listing no fields and offering
+ * "Save 0 change(s)". Being in this list is checked against the schema below before the button is
+ * offered.
+ */
 const EDITABLE: readonly string[] = ['Lead', 'Account', 'Contact', 'Opportunity']
 
 /**
@@ -103,6 +110,12 @@ export function RecordDetail({
   const live = useEntityRecord(entity, keyColumnOf(objectKey), id)
   const accounts = useEntityPage(entity === 'Contact' || entity === 'Opportunity' ? 'Account' : null)
   const process = useProcess(entity === 'Opportunity' ? 'Opportunity' : null)
+
+  // What the tenant has actually declared on this kind. `EDITABLE` says a custom field *may* be
+  // declared here; this says whether one *is*, and the button needs both.
+  const schema = useSchema()
+  const declaredCount =
+    schema.data?.entities.find((candidate) => candidate.kind === entity)?.fields.length ?? 0
 
   const accountNames = useMemo(() => {
     const names = new Map<string, string>()
@@ -202,12 +215,27 @@ export function RecordDetail({
               Only the four kinds a custom field can be declared on, and only for a live record.
               Everything else has nothing this build can write.
             */}
+            {/*
+              DISABLED WITH THE REASON, rather than opening a drawer that has nothing in it. The
+              button used to be offered whenever the kind *could* carry a declared field, and on a
+              tenant that has declared none it opened a panel saying "Nothing has been declared on
+              contacts" over a Save reading "0 change(s)". A reader who presses Edit and is shown
+              an empty form does not conclude "this tenant has declared no fields" — they conclude
+              the editor is broken, and the sentence explaining otherwise arrives after the click
+              that cost them the trust.
+
+              Two reasons, because they are two different facts and only one of them is fixable by
+              the person reading it: the kind takes no declared fields at all, or this tenant has
+              not declared any yet — and the second names where to go.
+            */}
             <Button
-              disabled={!EDITABLE.includes(String(entity))}
+              disabled={!EDITABLE.includes(String(entity)) || declaredCount === 0}
               title={
-                EDITABLE.includes(String(entity))
-                  ? undefined
-                  : 'Nothing on this record is editable by this build.'
+                !EDITABLE.includes(String(entity))
+                  ? 'Nothing on this record is editable by this build.'
+                  : declaredCount === 0
+                    ? `No fields have been declared on ${model.plural.toLowerCase()}. Declare one in Setup and it becomes editable here — no deployment.`
+                    : undefined
               }
               onClick={() => setEditing(true)}
             >
