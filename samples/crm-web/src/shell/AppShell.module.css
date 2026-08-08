@@ -34,7 +34,16 @@
 .topbar {
   height: var(--shell-topbar-h);
   flex: none;
-  display: flex;
+
+  /*
+   * THREE COLUMNS, so the search sits in the middle of the bar rather than wherever the width of
+   * what is beside it leaves it. As a flex row the search grew to its 744px cap and everything
+   * after it was pushed to the edge, which left a band of empty bar between the two — even at
+   * 1440, and wider the wider the window. A grid gives the search the centre column and the two
+   * ends equal room, so the bar stays balanced at every width instead of at one.
+   */
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 744px) 1fr;
   align-items: center;
   gap: 21px;
   padding: 0 18px;
@@ -75,8 +84,8 @@
 }
 
 .search {
-  flex: 1;
-  max-width: 744px;
+  /* The centre column already caps the width; `auto` would have sized it to its own text. */
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 9px;
@@ -153,12 +162,8 @@
 }
 
 .topbarEnd {
-  /*
-   * Pushed to the far edge. `.personas` carried this and the profile took the role picker with
-   * it, so removing that run of buttons left the avatar floating beside the search box with the
-   * right half of the bar empty behind it — which reads as decoration, not as the way in.
-   */
-  margin-left: auto;
+  /* The right-hand column's own edge; the grid does the pushing now. */
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: 13px;

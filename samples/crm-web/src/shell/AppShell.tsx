@@ -17,6 +17,11 @@ import styles from './AppShell.module.css'
  */
 export function AppShell() {
   const navigate = useNavigate()
+
+  // Held here rather than in the top bar, because two controls open it: the avatar on the bar and
+  // the one at the foot of the rail. Owned by either, the other could not reach it — which is how
+  // the rail's came to be a `<div>` that showed the person's initials and did nothing.
+  const [profileOpen, setProfileOpen] = useState(false)
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const currentApp = appForPath(pathname)
 
@@ -36,9 +41,9 @@ export function AppShell() {
 
   return (
     <div className={styles.shell}>
-      <TopBar currentApp={currentApp} />
+      <TopBar currentApp={currentApp} onOpenProfile={() => setProfileOpen(true)} />
       <div className={styles.middle}>
-        <AppRail currentApp={currentApp} />
+        <AppRail currentApp={currentApp} onOpenProfile={() => setProfileOpen(true)} />
         <div className={styles.main}>
           <TabStrip />
           <main className={styles.content}>
@@ -46,13 +51,14 @@ export function AppShell() {
           </main>
         </div>
       </div>
+
+      {profileOpen ? <ProfileDrawer onClose={() => setProfileOpen(false)} /> : null}
     </div>
   )
 }
 
-function TopBar({ currentApp }: { currentApp: string }) {
+function TopBar({ currentApp, onOpenProfile }: { currentApp: string; onOpenProfile: () => void }) {
   const { t } = useLingui()
-  const [profileOpen, setProfileOpen] = useState(false)
   const session = useSession()
   const navigate = useNavigate()
   const app = [...APPS, SETUP_APP].find((candidate) => candidate.id === currentApp)
@@ -95,21 +101,19 @@ function TopBar({ currentApp }: { currentApp: string }) {
           type="button"
           className={styles.avatar}
           aria-haspopup="dialog"
-          aria-expanded={profileOpen}
           title={t`${session.displayName} · signed in as ${session.persona}`}
-          onClick={() => setProfileOpen(true)}
+          onClick={onOpenProfile}
         >
           {session.initials}
         </button>
       </div>
 
-      {profileOpen ? <ProfileDrawer onClose={() => setProfileOpen(false)} /> : null}
     </header>
   )
 
 }
 
-function AppRail({ currentApp }: { currentApp: string }) {
+function AppRail({ currentApp, onOpenProfile }: { currentApp: string; onOpenProfile: () => void }) {
   const { t } = useLingui()
   const session = useSession()
 
@@ -132,7 +136,20 @@ function AppRail({ currentApp }: { currentApp: string }) {
           <RailIcon path={SETUP_APP.icon} />
           <span className={styles.railLabel}>Setup</span>
         </RailLink>
-        <div className={styles.railButton} style={{ height: 52, cursor: 'default' }}>
+        {/*
+          THE SECOND WAY IN, and until now the one that looked most like a way in: a rail foot
+          showing the person's initials and their role, at the corner every application of this
+          shape puts the account menu — and it was a `<div>` with `cursor: default`. Somebody who
+          went looking for their profile found this first and it did nothing.
+        */}
+        <button
+          type="button"
+          className={styles.railButton}
+          style={{ height: 52 }}
+          aria-haspopup="dialog"
+          title={t`Profile and preferences`}
+          onClick={onOpenProfile}
+        >
           <span className={styles.railAvatar}>{session.initials}</span>
           {/*
             The chair's own label, from the one list that has them. A chain of three comparisons
@@ -142,7 +159,7 @@ function AppRail({ currentApp }: { currentApp: string }) {
           <span className={styles.railLabel} style={{ color: 'var(--color-neutral-600)' }}>
             {PERSONAS.find((persona) => persona.id === session.persona)?.label ?? session.persona}
           </span>
-        </div>
+        </button>
       </div>
     </nav>
   )
