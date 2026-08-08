@@ -1,0 +1,340 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-08-08 18:35+0700\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+
+#: src/shell/navigation.ts
+msgctxt "a company this CRM sells to — not a login account"
+msgid "Account"
+msgstr "Account"
+
+#: src/shell/navigation.ts
+msgctxt "a company this CRM sells to — not a login account"
+msgid "Accounts"
+msgstr "Accounts"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "against the assigned number"
+msgstr "against the assigned number"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "All"
+msgstr "All"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "All open"
+msgstr "All open"
+
+#: src/shell/navigation.ts
+msgctxt "reports and dashboards"
+msgid "Analytics"
+msgstr "Analytics"
+
+#: src/shell/AppShell.tsx
+msgid "Applications"
+msgstr "Applications"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Attainment"
+msgstr "Attainment"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Clear"
+msgstr "Clear"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Close"
+msgstr "Close"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Closed won QTD"
+msgstr "Closed won QTD"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Closing this month"
+msgstr "Closing this month"
+
+#: src/shell/navigation.ts
+msgctxt "a person at an account"
+msgid "Contact"
+msgstr "Contact"
+
+#: src/shell/navigation.ts
+msgctxt "a person at an account"
+msgid "Contacts"
+msgstr "Contacts"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Convert a lead"
+msgstr "Convert a lead"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Everyone"
+msgstr "Everyone"
+
+#: src/shell/navigation.ts
+msgctxt "rail glyph label for Executive"
+msgid "Exec"
+msgstr "Exec"
+
+#: src/shell/navigation.ts
+msgctxt "leadership dashboards"
+msgid "Executive"
+msgstr "Executive"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Executive board"
+msgstr "Executive board"
+
+#: src/shell/AppShell.tsx
+msgid "Home"
+msgstr "Home"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "in this filter"
+msgstr "in this filter"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Kanban"
+msgstr "Kanban"
+
+#: src/shell/AppShell.tsx
+msgid "Language"
+msgstr "Language"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Largest open"
+msgstr "Largest open"
+
+#: src/shell/navigation.ts
+msgctxt "an unqualified prospect"
+msgid "Lead"
+msgstr "Lead"
+
+#: src/shell/navigation.ts
+msgctxt "an unqualified prospect"
+msgid "Leads"
+msgstr "Leads"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Lost"
+msgstr "Lost"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Mine"
+msgstr "Mine"
+
+#: src/shell/navigation.ts
+msgctxt "the current person’s own queue"
+msgid "My work"
+msgstr "My work"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Nothing in this filter closes before the end of the month."
+msgstr "Nothing in this filter closes before the end of the month."
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Nothing is open against this tenant."
+msgstr "Nothing is open against this tenant."
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Nothing is open in this filter."
+msgstr "Nothing is open in this filter."
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Open"
+msgstr "Open"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Open deals"
+msgstr "Open deals"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "open deals in this filter"
+msgstr "open deals in this filter"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Open pipeline"
+msgstr "Open pipeline"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Open pipeline by likelihood"
+msgstr "Open pipeline by likelihood"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Open pipeline by probability band"
+msgstr "Open pipeline by probability band"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Open pipeline by stage"
+msgstr "Open pipeline by stage"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Open work by kind"
+msgstr "Open work by kind"
+
+#: src/shell/navigation.ts
+msgctxt "a deal in the pipeline"
+msgid "Opportunities"
+msgstr "Opportunities"
+
+#: src/shell/navigation.ts
+msgctxt "a deal in the pipeline"
+msgid "Opportunity"
+msgstr "Opportunity"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Outcome"
+msgstr "Outcome"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Owner"
+msgstr "Owner"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Pipeline by stage"
+msgstr "Pipeline by stage"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Pipeline overview"
+msgstr "Pipeline overview"
+
+#: src/shell/navigation.ts
+msgctxt "rail glyph label for Planning — a noun, not the verb"
+msgid "Plan"
+msgstr "Plan"
+
+#: src/shell/navigation.ts
+msgctxt "account and territory planning"
+msgid "Planning"
+msgstr "Planning"
+
+#: src/shell/navigation.ts
+msgctxt "a priced proposal"
+msgid "Quote"
+msgstr "Quote"
+
+#: src/shell/navigation.ts
+msgctxt "a priced proposal"
+msgid "Quotes"
+msgstr "Quotes"
+
+#: src/shell/AppShell.tsx
+msgid "Record types"
+msgstr "Record types"
+
+#: src/shell/AppShell.tsx
+msgid "Reports"
+msgstr "Reports"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Rhythm"
+msgstr "Rhythm"
+
+#: src/shell/navigation.ts
+msgctxt "rail glyph label for Analytics"
+msgid "Rpts"
+msgstr "Rpts"
+
+#: src/shell/navigation.ts
+msgctxt "the rail glyph label — must fit under a 24px icon"
+msgid "Sales"
+msgstr "Sales"
+
+#: src/shell/navigation.ts
+msgctxt "the CRM application itself, shown in the top bar"
+msgid "Sales Cloud"
+msgstr "Sales Cloud"
+
+#: src/shell/AppShell.tsx
+msgid "sandbox"
+msgstr "sandbox"
+
+#: src/shell/AppShell.tsx
+msgid "Search accounts, contacts, opportunities…"
+msgstr "Search accounts, contacts, opportunities…"
+
+#: src/shell/navigation.ts
+msgctxt "customer support application"
+msgid "Service"
+msgstr "Service"
+
+#: src/shell/AppShell.tsx
+msgid "Setup"
+msgstr "Setup"
+
+#: src/shell/navigation.ts
+msgctxt "administration"
+msgid "Setup"
+msgstr "Setup"
+
+#: src/shell/navigation.ts
+msgctxt "rail glyph label for Setup"
+msgid "Setup"
+msgstr "Setup"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Showing the default view"
+msgstr "Showing the default view"
+
+#: src/shell/AppShell.tsx
+msgid "Signed-in role"
+msgstr "Signed-in role"
+
+#: src/shell/navigation.ts
+msgctxt "rail glyph label for Service"
+msgid "Svc"
+msgstr "Svc"
+
+#: src/shell/navigation.ts
+msgctxt "a to-do on a record"
+msgid "Task"
+msgstr "Task"
+
+#: src/shell/navigation.ts
+msgctxt "a to-do on a record"
+msgid "Tasks"
+msgstr "Tasks"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Tasks open"
+msgstr "Tasks open"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "This month"
+msgstr "This month"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "This quarter"
+msgstr "This quarter"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Weighted"
+msgstr "Weighted"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Won"
+msgstr "Won"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "won, in this filter"
+msgstr "won, in this filter"
+
+#: src/shell/navigation.ts
+msgctxt "rail glyph label for My work"
+msgid "Work"
+msgstr "Work"
+
+#: src/shell/navigation.ts
+msgctxt "field service job"
+msgid "Work Order"
+msgstr "Work Order"
+
+#: src/shell/navigation.ts
+msgctxt "field service job"
+msgid "Work Orders"
+msgstr "Work Orders"

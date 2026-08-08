@@ -1,0 +1,340 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-08-08 18:35+0700\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: vi\n"
+
+#: src/shell/navigation.ts
+msgctxt "a company this CRM sells to — not a login account"
+msgid "Account"
+msgstr "Khách hàng"
+
+#: src/shell/navigation.ts
+msgctxt "a company this CRM sells to — not a login account"
+msgid "Accounts"
+msgstr "Khách hàng"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "against the assigned number"
+msgstr "so với chỉ tiêu được giao"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "All"
+msgstr "Tất cả"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "All open"
+msgstr "Tất cả đang mở"
+
+#: src/shell/navigation.ts
+msgctxt "reports and dashboards"
+msgid "Analytics"
+msgstr "Báo cáo"
+
+#: src/shell/AppShell.tsx
+msgid "Applications"
+msgstr "Ứng dụng"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Attainment"
+msgstr "Mức đạt"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Clear"
+msgstr "Xoá lọc"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Close"
+msgstr "Chốt"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Closed won QTD"
+msgstr "Đã thắng trong quý"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Closing this month"
+msgstr "Chốt trong tháng"
+
+#: src/shell/navigation.ts
+msgctxt "a person at an account"
+msgid "Contact"
+msgstr "Liên hệ"
+
+#: src/shell/navigation.ts
+msgctxt "a person at an account"
+msgid "Contacts"
+msgstr "Liên hệ"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Convert a lead"
+msgstr "Chuyển đổi lead"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Everyone"
+msgstr "Tất cả"
+
+#: src/shell/navigation.ts
+msgctxt "rail glyph label for Executive"
+msgid "Exec"
+msgstr "Đ.Hành"
+
+#: src/shell/navigation.ts
+msgctxt "leadership dashboards"
+msgid "Executive"
+msgstr "Ban điều hành"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Executive board"
+msgstr "Bảng điều hành"
+
+#: src/shell/AppShell.tsx
+msgid "Home"
+msgstr "Trang chủ"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "in this filter"
+msgstr "trong bộ lọc"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Kanban"
+msgstr "Kanban"
+
+#: src/shell/AppShell.tsx
+msgid "Language"
+msgstr "Ngôn ngữ"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Largest open"
+msgstr "Cơ hội lớn nhất"
+
+#: src/shell/navigation.ts
+msgctxt "an unqualified prospect"
+msgid "Lead"
+msgstr "Khách tiềm năng"
+
+#: src/shell/navigation.ts
+msgctxt "an unqualified prospect"
+msgid "Leads"
+msgstr "Khách tiềm năng"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Lost"
+msgstr "Thua"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Mine"
+msgstr "Của tôi"
+
+#: src/shell/navigation.ts
+msgctxt "the current person’s own queue"
+msgid "My work"
+msgstr "Việc của tôi"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Nothing in this filter closes before the end of the month."
+msgstr "Không có cơ hội nào chốt trước cuối tháng."
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Nothing is open against this tenant."
+msgstr "Tenant này chưa có gì đang mở."
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Nothing is open in this filter."
+msgstr "Không có gì đang mở với bộ lọc này."
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Open"
+msgstr "Đang mở"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Open deals"
+msgstr "Cơ hội đang mở"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "open deals in this filter"
+msgstr "cơ hội đang mở trong bộ lọc"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Open pipeline"
+msgstr "Pipeline đang mở"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Open pipeline by likelihood"
+msgstr "Pipeline đang mở theo xác suất"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Open pipeline by probability band"
+msgstr "Pipeline đang mở theo dải xác suất"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Open pipeline by stage"
+msgstr "Pipeline đang mở theo giai đoạn"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Open work by kind"
+msgstr "Công việc đang mở theo loại"
+
+#: src/shell/navigation.ts
+msgctxt "a deal in the pipeline"
+msgid "Opportunities"
+msgstr "Cơ hội"
+
+#: src/shell/navigation.ts
+msgctxt "a deal in the pipeline"
+msgid "Opportunity"
+msgstr "Cơ hội"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Outcome"
+msgstr "Kết quả"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Owner"
+msgstr "Phụ trách"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Pipeline by stage"
+msgstr "Pipeline theo giai đoạn"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Pipeline overview"
+msgstr "Tổng quan pipeline"
+
+#: src/shell/navigation.ts
+msgctxt "rail glyph label for Planning — a noun, not the verb"
+msgid "Plan"
+msgstr "K.Hoạch"
+
+#: src/shell/navigation.ts
+msgctxt "account and territory planning"
+msgid "Planning"
+msgstr "Kế hoạch"
+
+#: src/shell/navigation.ts
+msgctxt "a priced proposal"
+msgid "Quote"
+msgstr "Báo giá"
+
+#: src/shell/navigation.ts
+msgctxt "a priced proposal"
+msgid "Quotes"
+msgstr "Báo giá"
+
+#: src/shell/AppShell.tsx
+msgid "Record types"
+msgstr "Loại bản ghi"
+
+#: src/shell/AppShell.tsx
+msgid "Reports"
+msgstr "Báo cáo"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Rhythm"
+msgstr "Nhịp độ"
+
+#: src/shell/navigation.ts
+msgctxt "rail glyph label for Analytics"
+msgid "Rpts"
+msgstr "B.Cáo"
+
+#: src/shell/navigation.ts
+msgctxt "the rail glyph label — must fit under a 24px icon"
+msgid "Sales"
+msgstr "B.Hàng"
+
+#: src/shell/navigation.ts
+msgctxt "the CRM application itself, shown in the top bar"
+msgid "Sales Cloud"
+msgstr "Sales Cloud"
+
+#: src/shell/AppShell.tsx
+msgid "sandbox"
+msgstr "sandbox"
+
+#: src/shell/AppShell.tsx
+msgid "Search accounts, contacts, opportunities…"
+msgstr "Tìm khách hàng, liên hệ, cơ hội…"
+
+#: src/shell/navigation.ts
+msgctxt "customer support application"
+msgid "Service"
+msgstr "Dịch vụ"
+
+#: src/shell/AppShell.tsx
+msgid "Setup"
+msgstr "Thiết lập"
+
+#: src/shell/navigation.ts
+msgctxt "administration"
+msgid "Setup"
+msgstr "Thiết lập"
+
+#: src/shell/navigation.ts
+msgctxt "rail glyph label for Setup"
+msgid "Setup"
+msgstr "T.Lập"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Showing the default view"
+msgstr "Đang xem chế độ mặc định"
+
+#: src/shell/AppShell.tsx
+msgid "Signed-in role"
+msgstr "Vai trò đang đăng nhập"
+
+#: src/shell/navigation.ts
+msgctxt "rail glyph label for Service"
+msgid "Svc"
+msgstr "CSKH"
+
+#: src/shell/navigation.ts
+msgctxt "a to-do on a record"
+msgid "Task"
+msgstr "Công việc"
+
+#: src/shell/navigation.ts
+msgctxt "a to-do on a record"
+msgid "Tasks"
+msgstr "Công việc"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Tasks open"
+msgstr "Việc đang mở"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "This month"
+msgstr "Tháng này"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "This quarter"
+msgstr "Quý này"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Weighted"
+msgstr "Có trọng số"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Won"
+msgstr "Thắng"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "won, in this filter"
+msgstr "đã thắng, trong bộ lọc"
+
+#: src/shell/navigation.ts
+msgctxt "rail glyph label for My work"
+msgid "Work"
+msgstr "Việc"
+
+#: src/shell/navigation.ts
+msgctxt "field service job"
+msgid "Work Order"
+msgstr "Lệnh việc"
+
+#: src/shell/navigation.ts
+msgctxt "field service job"
+msgid "Work Orders"
+msgstr "Lệnh việc"

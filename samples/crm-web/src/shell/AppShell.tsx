@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Link, Outlet, useNavigate, useRouterState } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import type { ReactNode } from 'react'
@@ -5,6 +6,9 @@ import { Button, ButtonGroup } from '@/design/primitives/Button'
 import { cx } from '@/lib/cx'
 import { PERSONAS, useSession } from '@/session/SessionProvider'
 import type { Persona } from '@/session/SessionProvider'
+import { useLocale } from '@/app/LocaleProvider'
+import { LOCALES } from '@/lib/i18n'
+import type { Locale } from '@/lib/i18n'
 import { APPS, OBJECTS, SETUP_APP, appForPath } from './navigation'
 import styles from './AppShell.module.css'
 
@@ -51,6 +55,7 @@ export function AppShell() {
 }
 
 function TopBar({ currentApp }: { currentApp: string }) {
+  const { t } = useLingui()
   const session = useSession()
   const navigate = useNavigate()
   const app = [...APPS, SETUP_APP].find((candidate) => candidate.id === currentApp)
@@ -62,20 +67,22 @@ function TopBar({ currentApp }: { currentApp: string }) {
           GoK
         </div>
         <div className={styles.brandRule} />
-        <div className={styles.appLabel}>{app?.label ?? 'Sales Cloud'}</div>
+        <div className={styles.appLabel}>{app ? t(app.label) : ''}</div>
       </div>
 
       <button type="button" className={styles.search} onClick={() => void navigate({ to: '/search' })}>
         <span className={styles.searchGlyph} aria-hidden="true">
           ⌕
         </span>
-        <span>Search accounts, contacts, opportunities…</span>
+        <span>
+          <Trans>Search accounts, contacts, opportunities…</Trans>
+        </span>
         <span className={styles.kbd} aria-hidden="true">
           ⌘K
         </span>
       </button>
 
-      <ButtonGroup label="Signed-in role" className={styles.personas}>
+      <ButtonGroup label={t`Signed-in role`} className={styles.personas}>
         {PERSONAS.map((persona) => (
           <Button
             key={persona.id}
@@ -93,6 +100,9 @@ function TopBar({ currentApp }: { currentApp: string }) {
         A reader who tries one and gets nothing has learnt that this application's chrome does not
         respond, which is the wrong thing to have taught them before they reach a real control.
       */}
+
+      <LocaleSwitch />
+
       <div className={styles.topbarEnd}>
         <div className={styles.avatar} title={`${session.displayName} · signed in as ${session.persona}`}>
           {session.initials}
@@ -121,15 +131,46 @@ function TopBar({ currentApp }: { currentApp: string }) {
   }
 }
 
+/**
+ * The language control.
+ *
+ * A GROUP OF BUTTONS RATHER THAN A `<select>`, to match the role switcher beside it: two locales
+ * is a choice you can see, and a dropdown would hide the one you are not in. It moves to a
+ * `<select>` at the locale that does not fit on the bar — not before.
+ *
+ * `lang` on each button is what stops a screen reader announcing "Tiếng Việt" with an English
+ * voice while the surrounding chrome is still English.
+ */
+function LocaleSwitch() {
+  const { locale, setLocale } = useLocale()
+  const { t } = useLingui()
+
+  return (
+    <ButtonGroup label={t`Language`}>
+      {(Object.entries(LOCALES) as [Locale, string][]).map(([code, name]) => (
+        <Button
+          key={code}
+          lang={code}
+          aria-pressed={locale === code}
+          onClick={() => setLocale(code)}
+        >
+          {name}
+        </Button>
+      ))}
+    </ButtonGroup>
+  )
+}
+
 function AppRail({ currentApp }: { currentApp: string }) {
+  const { t } = useLingui()
   const session = useSession()
 
   return (
-    <nav className={styles.rail} aria-label="Applications">
+    <nav className={styles.rail} aria-label={t`Applications`}>
       {APPS.map((app) => (
-        <RailLink key={app.id} to={app.to} label={app.label} current={currentApp === app.id}>
+        <RailLink key={app.id} to={app.to} label={t(app.label)} current={currentApp === app.id}>
           <RailIcon path={app.icon} />
-          <span className={styles.railLabel}>{app.short}</span>
+          <span className={styles.railLabel}>{t(app.short)}</span>
         </RailLink>
       ))}
 
@@ -203,13 +244,14 @@ function RailIcon({ path }: { path: string }) {
 }
 
 function TabStrip() {
+  const { t } = useLingui()
   const { tenantId } = useSession()
   const pathname = useRouterState({ select: (state) => state.location.pathname })
 
   return (
-    <nav className={styles.tabs} aria-label="Record types">
+    <nav className={styles.tabs} aria-label={t`Record types`}>
       <Link to="/" className={styles.tab} aria-current={pathname === '/' ? 'page' : undefined}>
-        Home
+        <Trans>Home</Trans>
       </Link>
       {OBJECTS.map((object) => (
         <Link
@@ -219,7 +261,7 @@ function TabStrip() {
           className={styles.tab}
           aria-current={pathname.startsWith(`/records/${object.key}`) ? 'page' : undefined}
         >
-          {object.plural}
+          {t(object.plural)}
         </Link>
       ))}
       <Link
@@ -227,14 +269,14 @@ function TabStrip() {
         className={cx(styles.tab)}
         aria-current={pathname.startsWith('/analytics') ? 'page' : undefined}
       >
-        Reports
+        <Trans>Reports</Trans>
       </Link>
       <Link
         to="/setup"
         className={styles.tab}
         aria-current={pathname.startsWith('/setup') ? 'page' : undefined}
       >
-        Setup
+        <Trans>Setup</Trans>
       </Link>
 
       {/*
