@@ -41,7 +41,51 @@ type RecordTab = 'details' | 'related' | 'activity' | 'files'
 /** The kinds a custom field can be declared on, which is what the edit drawer writes. */
 const EDITABLE: readonly string[] = ['Lead', 'Account', 'Contact', 'Opportunity']
 
+/**
+ * The record page.
+ *
+ * Everything it draws is {@link RecordDetail}, which the list's peek draws too. That is the whole
+ * point of the split: the page and the peek were about to be two renderings of one record, and
+ * two renderings drift — the peek grows a field the page does not have, or stops showing one it
+ * does, and nobody notices because nobody opens both at once.
+ */
 export function RecordScreen({ objectKey, id }: { objectKey: string; id: string }) {
+  return (
+    <Page layout="full">
+      <RecordDetail objectKey={objectKey} id={id} density="full" />
+    </Page>
+  )
+}
+
+/**
+ * How much room the record has.
+ *
+ * `full` is the page. `peek` is the drawer at its narrowest, where the highlight strip and the
+ * stage path are the first things to go — both are horizontal by nature, and a horizontal strip in
+ * a 452px column is three items wrapping onto four lines, which reads as damage rather than
+ * density. What stays is the identity, the actions and the sections, because those are what
+ * somebody opened the record to see.
+ */
+export type RecordDensity = 'peek' | 'full'
+
+export function RecordDetail({
+  objectKey,
+  id,
+  density = 'full',
+  identity = true,
+}: {
+  objectKey: string
+  id: string
+  density?: RecordDensity
+  /**
+   * Whether to draw the record's own name and id.
+   *
+   * The drawer states them in its header, so a peek that drew them again showed the account name
+   * twice, eleven pixels apart. The actions stay either way — they are the record's, not the
+   * chrome's.
+   */
+  identity?: boolean
+}) {
   const navigate = useNavigate()
   const model = modelFor(objectKey)
   const { tenantId } = useSession()
@@ -95,15 +139,15 @@ export function RecordScreen({ objectKey, id }: { objectKey: string; id: string 
 
   if (entity !== null && live.isPending) {
     return (
-      <Page>
+      <>
         <Skeleton rows={8} />
-      </Page>
+      </>
     )
   }
 
   if (!record) {
     return (
-      <Page>
+      <>
         <EmptyState
           title={`No ${model.label.toLowerCase()} with the id ${id}`}
           detail="It may have been deleted, or the link may be from another tenant."
@@ -116,7 +160,7 @@ export function RecordScreen({ objectKey, id }: { objectKey: string; id: string 
             </Button>
           }
         />
-      </Page>
+      </>
     )
   }
 
@@ -137,18 +181,22 @@ export function RecordScreen({ objectKey, id }: { objectKey: string; id: string 
   const related = relatedLinksOf(model.key)
 
   return (
-    <Page layout="full">
-      <header className={styles.header}>
+    <>
+      <header className={`${styles.header} ${density === 'peek' ? styles.headerPeek : ''}`}>
         <div className={styles.identity}>
-          <div className={styles.avatar} aria-hidden="true">
-            {model.mono}
-          </div>
-          <div>
-            <div className={styles.eyebrow}>
-              {model.label} · {record.id}
-            </div>
-            <h1 className={styles.title}>{String(record[titleField] ?? record.id)}</h1>
-          </div>
+          {identity ? (
+            <>
+              <div className={styles.avatar} aria-hidden="true">
+                {model.mono}
+              </div>
+              <div>
+                <div className={styles.eyebrow}>
+                  {model.label} · {record.id}
+                </div>
+                <h1 className={styles.title}>{String(record[titleField] ?? record.id)}</h1>
+              </div>
+            </>
+          ) : null}
           <div className={styles.actions}>
             {/*
               Only the four kinds a custom field can be declared on, and only for a live record.
@@ -215,6 +263,7 @@ export function RecordScreen({ objectKey, id }: { objectKey: string; id: string 
           </div>
         </div>
 
+        {density === 'full' ? (
         <div className={styles.highlights}>
           {model.listCols.slice(1, 5).map((name) => (
             <div key={name}>
@@ -225,6 +274,7 @@ export function RecordScreen({ objectKey, id }: { objectKey: string; id: string 
             </div>
           ))}
         </div>
+        ) : null}
 
         {/*
           THE PATH IS A DISPLAY, AND IT USED TO BE MADE OF BUTTONS. Nine `<button>` elements with
@@ -238,7 +288,7 @@ export function RecordScreen({ objectKey, id }: { objectKey: string; id: string 
           the seeded definition by coincidence of naming; a tenant that renamed a stage saw its
           deal in none of them.
         */}
-        {path.length > 0 ? (
+        {path.length > 0 && density === 'full' ? (
           <ol className={styles.path} aria-label={`${model.label} path`}>
             {path.map((step, index) => (
               <li
@@ -364,6 +414,6 @@ export function RecordScreen({ objectKey, id }: { objectKey: string; id: string 
           onClose={() => setEditing(false)}
         />
       ) : null}
-    </Page>
+    </>
   )
 }
