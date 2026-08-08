@@ -149,6 +149,10 @@ msgctxt "the current person’s own queue"
 msgid "My work"
 msgstr "My work"
 
+#: src/features/sales/ConsoleScreen.tsx
+msgid "No filters are applied."
+msgstr "No filters are applied."
+
 #: src/shell/ProfileDrawer.tsx
 msgid "No grants. Every write is refused."
 msgstr "No grants. Every write is refused."
@@ -196,6 +200,10 @@ msgstr "Open pipeline by stage"
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Open work by kind"
 msgstr "Open work by kind"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Opens the lead list — a conversion starts from a lead."
+msgstr "Opens the lead list — a conversion starts from a lead."
 
 #: src/shell/navigation.ts
 msgctxt "a deal in the pipeline"
@@ -279,8 +287,8 @@ msgid "Sales Cloud"
 msgstr "Sales Cloud"
 
 #: src/shell/AppShell.tsx
-msgid "sandbox"
-msgstr "sandbox"
+#~ msgid "sandbox"
+#~ msgstr "sandbox"
 
 #: src/shell/AppShell.tsx
 msgid "Search accounts, contacts, opportunities…"
@@ -336,6 +344,10 @@ msgstr "Tasks"
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Tasks open"
 msgstr "Tasks open"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "the deals behind it"
+msgstr "the deals behind it"
 
 #: src/shell/ProfileDrawer.tsx
 msgid "The sample mints one token per role. Switching changes which token every request carries — not what the screen hides."

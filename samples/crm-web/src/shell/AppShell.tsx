@@ -3,7 +3,7 @@ import { Link, Outlet, useNavigate, useRouterState } from '@tanstack/react-route
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { cx } from '@/lib/cx'
-import { useSession } from '@/session/SessionProvider'
+import { PERSONAS, useSession } from '@/session/SessionProvider'
 import { APPS, OBJECTS, SETUP_APP, appForPath } from './navigation'
 import { ProfileDrawer } from './ProfileDrawer'
 import styles from './AppShell.module.css'

@@ -149,6 +149,10 @@ msgctxt "the current person’s own queue"
 msgid "My work"
 msgstr "Việc của tôi"
 
+#: src/features/sales/ConsoleScreen.tsx
+msgid "No filters are applied."
+msgstr "Chưa áp dụng bộ lọc nào."
+
 #: src/shell/ProfileDrawer.tsx
 msgid "No grants. Every write is refused."
 msgstr "Không có quyền nào. Mọi thao tác ghi đều bị từ chối."
@@ -196,6 +200,10 @@ msgstr "Pipeline đang mở theo giai đoạn"
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Open work by kind"
 msgstr "Công việc đang mở theo loại"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "Opens the lead list — a conversion starts from a lead."
+msgstr "Mở danh sách khách tiềm năng — chuyển đổi bắt đầu từ một khách tiềm năng."
 
 #: src/shell/navigation.ts
 msgctxt "a deal in the pipeline"
@@ -279,8 +287,8 @@ msgid "Sales Cloud"
 msgstr "Sales Cloud"
 
 #: src/shell/AppShell.tsx
-msgid "sandbox"
-msgstr "sandbox"
+#~ msgid "sandbox"
+#~ msgstr "sandbox"
 
 #: src/shell/AppShell.tsx
 msgid "Search accounts, contacts, opportunities…"
@@ -336,6 +344,10 @@ msgstr "Công việc"
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Tasks open"
 msgstr "Việc đang mở"
+
+#: src/features/sales/ConsoleScreen.tsx
+msgid "the deals behind it"
+msgstr "các cơ hội đằng sau con số này"
 
 #: src/shell/ProfileDrawer.tsx
 msgid "The sample mints one token per role. Switching changes which token every request carries — not what the screen hides."
