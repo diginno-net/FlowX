@@ -1,4 +1,4 @@
-import type { DescribedEntity, DescribedField, DescribedObject, SchemaDescription } from '@/api/contracts'
+import type { DescribedEntity, DescribedField, DescribedObject, SchemaDescription , DescribedOption } from '@/api/contracts'
 
 /**
  * One row per thing an administrator can look at, from what the server described.
@@ -40,7 +40,7 @@ export interface SchemaFieldRow {
   canRead: boolean
   /** Whether this caller may change it. */
   canWrite: boolean
-  options: readonly string[]
+  options: readonly DescribedOption[]
   /**
    * The id of the object a `Reference` field points at, and null for every other type.
    *
@@ -130,7 +130,8 @@ function fromEntity(entity: DescribedEntity): SchemaRow {
         canWrite: false,
         // A built-in column's closed set, when it has one. Defended against absence because a
         // server older than the field answers a column with a name and a label and nothing else.
-        options: column.options ?? [],
+        // A built-in column's vocabulary is values only; it is its own label.
+        options: (column.options ?? []).map((value) => ({ value, label: value })),
         references: null,
         declared: false,
       })),

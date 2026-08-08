@@ -183,7 +183,7 @@ export function ValidationScreen() {
                     value={value}
                     placeholder="Choose a value"
                     onChange={(event) => setValue(event.target.value)}
-                    options={options.map((entry) => ({ value: entry, label: entry }))}
+                    options={options.map((entry) => ({ value: entry.value, label: entry.label }))}
                   />
                 ) : (
                   <TextField

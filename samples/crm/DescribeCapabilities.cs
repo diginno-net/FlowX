@@ -139,7 +139,11 @@ public sealed class DescribeCrmSchema : ICapability<DescribeFor, SchemaDescripti
                 // here as well as refused at the write, because a form that offers to edit a
                 // roll-up is a form whose next screen contradicts it.
                 !field.IsComputed && Allows(field.RequiredPermission, held),
-                field.Options ?? [],
+                // Zipped rather than sent as two arrays: a client that had to line them up by
+                // index would line them up wrongly the first time a field had one and not the
+                // other. A value whose label was never written is called by its value, which is
+                // what every client did for all of them until now.
+                OptionsOf(field),
                 field.References)),
     ];
 
@@ -149,6 +153,16 @@ public sealed class DescribeCrmSchema : ICapability<DescribeFor, SchemaDescripti
         string field,
         string otherwise) =>
         labels.TryGetValue((kind, field), out var label) ? label : otherwise;
+
+    /// <summary>Pairs each option value with its label, falling back to the value.</summary>
+    private static IReadOnlyList<DescribedOption> OptionsOf(CustomFieldRow field)
+    {
+        var values = field.Options ?? [];
+        var labels = field.OptionLabels ?? [];
+
+        return [.. values.Select((value, index) =>
+            new DescribedOption(value, index < labels.Count ? labels[index] : value))];
+    }
 
     private static bool Allows(string? permission, HashSet<string> held) =>
         permission is not { Length: > 0 } || held.Contains(permission);

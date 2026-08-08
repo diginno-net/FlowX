@@ -23,7 +23,7 @@ const DESCRIPTION: SchemaDescription = {
       kind: 'Account',
       label: 'Account',
       columns: [{ name: 'name', label: 'name', options: [] }],
-      fields: [field({ name: 'segment', label: 'Segment', type: 'Picklist', options: ['gold'] })],
+      fields: [field({ name: 'segment', label: 'Segment', type: 'Picklist', options: [{ value: 'gold', label: 'Gold tier' }] })],
     },
   ],
   objects: [

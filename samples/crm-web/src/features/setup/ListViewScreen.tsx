@@ -190,8 +190,8 @@ export function ListViewScreen() {
                           value={value}
                           placeholder="Choose a value"
                           options={(picked?.options ?? []).map((entry) => ({
-                            value: entry,
-                            label: entry,
+                            value: entry.value,
+                            label: entry.label,
                           }))}
                           onChange={(event) => setValue(event.target.value)}
                         />

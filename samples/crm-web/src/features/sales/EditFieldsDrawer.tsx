@@ -132,7 +132,7 @@ function FieldInput({
         disabled={!field.canWrite}
         hint={hint}
         placeholder="Leave unchanged"
-        options={field.options.map((option) => ({ value: option, label: option }))}
+        options={field.options.map((option) => ({ value: option.value, label: option.label }))}
         onChange={(event) => onChange(event.target.value)}
       />
     )

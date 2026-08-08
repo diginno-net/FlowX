@@ -49,8 +49,20 @@ public sealed record DescribedField(
     bool IsComputed,
     bool CanRead,
     bool CanWrite,
-    IReadOnlyList<string> Options,
+    IReadOnlyList<DescribedOption> Options,
     Guid? References);
+
+/// <summary>One value a picklist may hold, and what it is called.</summary>
+/// <param name="Value">What is stored, and what a write must send.</param>
+/// <param name="Label">What to show a person.</param>
+/// <remarks>
+/// <strong>Both, because they are not the same string and the difference is the point.</strong>
+/// `custom_field_option` has carried a label since 0005 and describe returned only the value, so
+/// every picklist on every screen read `mid_market` at a person who had been shown a box to type
+/// "Mid-market" into. A client cannot repair that: it has no way to know that `mid_market` was
+/// ever called anything else, and a transcription in the client is the second copy that drifts.
+/// </remarks>
+public sealed record DescribedOption(string Value, string Label);
 
 /// <summary>One saved view, as a client needs to offer it <em>and draw it</em>.</summary>
 /// <param name="Name">What to ask for it by.</param>

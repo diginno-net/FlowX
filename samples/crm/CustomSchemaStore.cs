@@ -74,7 +74,8 @@ public sealed class CustomSchemaStore
     private const string FieldsForEntity = """
         SELECT f.field_id, f.name, f.data_type, f.is_required, f.references_object_id,
                array_remove(array_agg(o.value ORDER BY o.ordinal), NULL),
-               f.required_permission, f.is_unique, f.is_computed, f.read_permission, f.label
+               f.required_permission, f.is_unique, f.is_computed, f.read_permission, f.label,
+               array_remove(array_agg(o.label ORDER BY o.ordinal), NULL)
         FROM custom_field f
         LEFT JOIN custom_field_option o ON o.field_id = f.field_id
         WHERE f.applies_to = @appliesTo
@@ -84,7 +85,8 @@ public sealed class CustomSchemaStore
     private const string FieldsForObject = """
         SELECT f.field_id, f.name, f.data_type, f.is_required, f.references_object_id,
                array_remove(array_agg(o.value ORDER BY o.ordinal), NULL),
-               f.required_permission, f.is_unique, f.is_computed, f.read_permission, f.label
+               f.required_permission, f.is_unique, f.is_computed, f.read_permission, f.label,
+               array_remove(array_agg(o.label ORDER BY o.ordinal), NULL)
         FROM custom_field f
         LEFT JOIN custom_field_option o ON o.field_id = f.field_id
         WHERE f.object_id = @object
@@ -625,6 +627,10 @@ public sealed class CustomSchemaStore
             var options = await reader.GetFieldValueAsync<string[]>(5, cancellationToken)
                 .ConfigureAwait(false);
 
+            // Written since 0005 and read back by nothing until now: every client drew the value.
+            var optionLabels = await reader.GetFieldValueAsync<string[]>(11, cancellationToken)
+                .ConfigureAwait(false);
+
             var permission = await reader.IsDBNullAsync(6, cancellationToken).ConfigureAwait(false)
                 ? null
                 : reader.GetString(6);
@@ -636,6 +642,7 @@ public sealed class CustomSchemaStore
                 Enum.Parse<CustomFieldType>(reader.GetString(2)),
                 reader.GetBoolean(3),
                 options,
+                optionLabels,
                 references,
                 permission,
                 reader.GetBoolean(7),

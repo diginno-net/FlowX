@@ -252,6 +252,16 @@ public sealed record CustomFieldRow(
     CustomFieldType Type,
     bool IsRequired,
     IReadOnlyList<string>? Options = null,
+
+    /// <summary>
+    /// What each option is called, in the same order as <paramref name="Options"/>.
+    /// </summary>
+    /// <remarks>
+    /// Beside the values rather than replacing them: validation asks whether a written value is a
+    /// member of the set, which is a question about values, and a label that changed would then
+    /// invalidate rows that were correct when they were written.
+    /// </remarks>
+    IReadOnlyList<string>? OptionLabels = null,
     Guid? References = null,
     string? RequiredPermission = null,
     bool IsUnique = false,

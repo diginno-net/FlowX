@@ -579,8 +579,20 @@ export interface DescribedField {
   isComputed: boolean
   canRead: boolean
   canWrite: boolean
-  options: string[]
+  options: DescribedOption[]
   references: string | null
+}
+
+/**
+ * One value a picklist may hold, and what it is called.
+ *
+ * The server sends both because they are not the same string: `mid_market` is what a write must
+ * carry and "Mid-market" is what the administrator typed into the box. Screens that showed the
+ * value were showing a person the identifier of the thing they had named.
+ */
+export interface DescribedOption {
+  value: string
+  label: string
 }
 
 export interface DescribedView {

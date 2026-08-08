@@ -20,7 +20,7 @@ WORKDIR /src
 
 # Restore before the source is copied, so a change to a .cs file does not re-download the world.
 # The glob keeps every project's file at the path the solution expects.
-COPY global.json Directory.Build.props FlowX.slnx .editorconfig ./
+COPY global.json Directory.Build.props FlowX.slnx .editorconfig SonarLint.xml ./
 COPY src/ src/
 COPY plugins/ plugins/
 COPY samples/crm/ samples/crm/

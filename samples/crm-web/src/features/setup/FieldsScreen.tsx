@@ -129,7 +129,7 @@ export function FieldsScreen() {
                     header: 'Detail',
                     cell: (row: SchemaFieldRow) =>
                       row.options.length > 0 ? (
-                        <span className={styles.sub}>{row.options.join(' · ')}</span>
+                        <span className={styles.sub}>{row.options.map((o) => o.label).join(' · ')}</span>
                       ) : row.computed ? (
                         <span className={styles.sub}>ƒ computed by the server</span>
                       ) : row.references !== null ? (
