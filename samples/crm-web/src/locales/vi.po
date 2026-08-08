@@ -157,6 +157,10 @@ msgstr "Chưa áp dụng bộ lọc nào."
 msgid "No grants. Every write is refused."
 msgstr "Không có quyền nào. Mọi thao tác ghi đều bị từ chối."
 
+#: src/shell/ProfileDrawer.tsx
+msgid "Not in the org chart"
+msgstr "Không có trong sơ đồ tổ chức"
+
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Nothing in this filter closes before the end of the month."
 msgstr "Không có cơ hội nào chốt trước cuối tháng."
@@ -215,6 +219,10 @@ msgctxt "a deal in the pipeline"
 msgid "Opportunity"
 msgstr "Cơ hội"
 
+#: src/shell/ProfileDrawer.tsx
+msgid "Organisation"
+msgstr "Tổ chức"
+
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Outcome"
 msgstr "Kết quả"
@@ -222,6 +230,10 @@ msgstr "Kết quả"
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Owner"
 msgstr "Phụ trách"
+
+#: src/shell/ProfileDrawer.tsx
+msgid "People reporting"
+msgstr "Nhân sự báo cáo"
 
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Pipeline by stage"
@@ -245,6 +257,10 @@ msgstr "Kế hoạch"
 msgid "Profile"
 msgstr "Hồ sơ"
 
+#: src/shell/AppShell.tsx
+msgid "Profile and preferences"
+msgstr "Hồ sơ và tuỳ chọn"
+
 #: src/shell/navigation.ts
 msgctxt "a priced proposal"
 msgid "Quote"
@@ -263,13 +279,17 @@ msgstr "Loại bản ghi"
 msgid "Reports"
 msgstr "Báo cáo"
 
+#: src/shell/ProfileDrawer.tsx
+msgid "Reports to"
+msgstr "Quản lý trực tiếp"
+
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Rhythm"
 msgstr "Nhịp độ"
 
 #: src/shell/ProfileDrawer.tsx
-msgid "Role"
-msgstr "Vai trò"
+#~ msgid "Role"
+#~ msgstr "Vai trò"
 
 #: src/shell/navigation.ts
 msgctxt "rail glyph label for Analytics"
@@ -317,10 +337,18 @@ msgstr "T.Lập"
 msgid "Showing the default view"
 msgstr "Đang xem chế độ mặc định"
 
+#: src/shell/ProfileDrawer.tsx
+msgid "Sign in as"
+msgstr "Đăng nhập với vai trò"
+
+#: src/shell/ProfileDrawer.tsx
+msgid "Signed in as"
+msgstr "Đang đăng nhập với vai trò"
+
 #. placeholder {0}: session.tenantId
 #: src/shell/ProfileDrawer.tsx
-msgid "Signed in to {0}"
-msgstr "Đang đăng nhập vào {0}"
+#~ msgid "Signed in to {0}"
+#~ msgstr "Đang đăng nhập vào {0}"
 
 #: src/shell/ProfileDrawer.tsx
 msgid "Signed-in role"
@@ -350,8 +378,12 @@ msgid "the deals behind it"
 msgstr "các cơ hội đằng sau con số này"
 
 #: src/shell/ProfileDrawer.tsx
-msgid "The sample mints one token per role. Switching changes which token every request carries — not what the screen hides."
-msgstr "Mỗi vai trò dùng một token riêng. Đổi vai trò là đổi token gửi kèm mọi request — không phải chỉ ẩn bớt nút trên màn hình."
+#~ msgid "The sample mints one token per role. Switching changes which token every request carries — not what the screen hides."
+#~ msgstr "Mỗi vai trò dùng một token riêng. Đổi vai trò là đổi token gửi kèm mọi request — không phải chỉ ẩn bớt nút trên màn hình."
+
+#: src/shell/ProfileDrawer.tsx
+msgid "This build has no login. Each role is a token the client sends, so switching here is what signing in as somebody else would be — the server sees a different caller, not a screen with fewer buttons."
+msgstr "Bản này chưa có đăng nhập. Mỗi vai trò là một token do client gửi lên, nên đổi ở đây chính là đăng nhập bằng người khác — server thấy một người gọi khác, không phải một màn hình bớt nút."
 
 #: src/features/sales/ConsoleScreen.tsx
 msgid "This month"

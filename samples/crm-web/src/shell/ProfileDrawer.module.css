@@ -1,5 +1,90 @@
 /* Layout for the profile panel. Every colour is a token; nothing here names one directly. */
 
+/* — who — */
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 4px 0 18px;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.avatar {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--color-accent-700);
+  color: var(--color-neutral-100);
+  font-family: var(--font-heading);
+  font-size: 17px;
+}
+
+/* `min-width: 0` so a long name wraps instead of pushing the avatar off the panel. */
+.identityText {
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 19px;
+  line-height: 1.25;
+}
+
+.title {
+  margin-top: 2px;
+  font-size: 13.5px;
+  color: var(--color-neutral-700);
+}
+
+.userId {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11.5px;
+  color: var(--color-neutral-600);
+  overflow-wrap: anywhere;
+}
+
+/* — what the tenant knows — */
+
+/*
+ * Two columns of label-over-value. A definition list rather than divs, because that is what this
+ * is: a screen reader announces four pairs instead of eight loose strings.
+ */
+.meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+  margin: 0;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.meta dt {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-neutral-600);
+}
+
+.meta dd {
+  margin: 3px 0 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+/* An absent fact is drawn as absent rather than left blank, which reads as a loading bug. */
+.unknown {
+  color: var(--color-neutral-600);
+}
+
+/* — settings — */
+
 .section {
   padding: 18px 0;
   border-bottom: 1px solid var(--color-divider);

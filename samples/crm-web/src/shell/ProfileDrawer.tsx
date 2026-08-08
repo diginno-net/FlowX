@@ -1,21 +1,22 @@
 /**
- * Who is signed in, what that lets them do, and what language they read it in.
+ * Who is signed in, what the tenant knows about them, what that lets them do, and what language
+ * they read it in.
  *
- * WHY THE ROLE MOVED HERE FROM THE TOP BAR. The bar carried a four-button role picker and, once
- * language arrived, a second run of buttons beside it — two segmented controls competing with the
- * search field for the same strip. Worse, the picker showed the *names* of four personas and
- * nothing about what separates them, which is the one thing this sample exists to demonstrate.
- * Here the grants are listed under the choice, so switching to `manager` and watching
- * `crm.discount.approve` appear is the demonstration rather than a sentence in a README.
+ * THE IDENTITY IS THE TENANT'S, NOT THE CLIENT'S. It read a display name off a constant in
+ * `SessionProvider` and stopped there, so the panel could tell you your own initials and nothing
+ * a colleague could have told you: not your title, not who you report to, not how many people
+ * report to you. `org_member` holds all three and `crm.org.chart` already serves them — the panel
+ * was asking the wrong side of the connection.
  *
- * WHY A DRAWER RATHER THAN A MENU ANCHORED TO THE AVATAR. `Drawer` already closes on Escape,
- * moves focus in on open and returns it on close. A popover would need all three written again,
- * and a second thing in this codebase that opens over the page is a second thing to keep
- * accessible. The panel is what the design system has; this uses it.
+ * WHY THE ROLE PICKER IS HERE AND LOOKS LIKE A SETTING. It is the sample's stand-in for signing in
+ * as somebody else: there is no login, and `CrmTokenHandler` says so in its own header — the
+ * tokens are constants and a real deployment deletes the file. Rather than dress that up, the
+ * panel states it under the picker. A "Sign out" button would be the alternative and it would do
+ * nothing, which is the one control this codebase argues hardest against.
  *
- * IT IS NOT A SETTINGS SCREEN. Nothing here writes to the server — the persona is a client-side
- * token swap and the locale is a `localStorage` key. A real deployment replaces the first with
- * whatever its identity provider says and keeps the second.
+ * NOTHING HERE WRITES TO THE SERVER. The persona is a token swap in the client and the locale is a
+ * `localStorage` key, and the panel says so where a reader would otherwise assume their language
+ * had been saved to their account.
  */
 import { Trans, useLingui } from '@lingui/react/macro'
 import { useNavigate } from '@tanstack/react-router'
@@ -23,6 +24,7 @@ import { Button, ButtonGroup } from '@/design/primitives/Button'
 import { Drawer } from '@/design/primitives/Drawer'
 import { Tag } from '@/design/primitives/Tag'
 import { useLocale } from '@/app/LocaleProvider'
+import { useOrgChart } from '@/api/queries/hooks'
 import { LOCALES } from '@/lib/i18n'
 import type { Locale } from '@/lib/i18n'
 import { PERSONAS, useSession } from '@/session/SessionProvider'
@@ -34,11 +36,15 @@ export function ProfileDrawer({ onClose }: { onClose: () => void }) {
   const { locale, setLocale } = useLocale()
   const { t } = useLingui()
   const navigate = useNavigate()
+  const org = useOrgChart()
+
+  const members = org.data?.members ?? []
+  const me = members.find((member) => member.userId === session.userId)
+  const manager = me?.reportsTo ? members.find((m) => m.userId === me.reportsTo) : undefined
 
   /**
    * Switching role also lands where that role starts, as the prototype does — a director dropped
-   * on a seller's console has to navigate before they see anything of theirs. This moved here
-   * with the picker; leaving it behind in the top bar would have made the switch land nowhere.
+   * on a seller's console has to navigate before they see anything of theirs.
    */
   function switchTo(persona: Persona) {
     session.switchTo(persona)
@@ -57,21 +63,53 @@ export function ProfileDrawer({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Drawer
-      title={session.displayName}
-      eyebrow={t`Profile`}
-      subtitle={t`Signed in to ${session.tenantId}`}
-      onClose={onClose}
-      width={420}
-    >
+    <Drawer title={t`Profile`} onClose={onClose} width={420}>
+      <section className={styles.identity}>
+        <div className={styles.avatar} aria-hidden="true">
+          {session.initials}
+        </div>
+        <div className={styles.identityText}>
+          <h2 className={styles.name}>{session.displayName}</h2>
+          {/*
+            The tenant's word for what this person is, which is not the same as the grants they
+            hold: `org_member.role` decides what they see by default, and the token decides what
+            they may do. Both are shown because a reader who is told only one asks about the other.
+          */}
+          <div className={styles.title}>
+            {me ? me.role : <span className={styles.unknown}><Trans>Not in the org chart</Trans></span>}
+          </div>
+          <code className={styles.userId}>{session.userId}</code>
+        </div>
+      </section>
+
+      <dl className={styles.meta}>
+        <div>
+          <dt><Trans>Organisation</Trans></dt>
+          <dd>{session.tenantId}</dd>
+        </div>
+        <div>
+          <dt><Trans>Reports to</Trans></dt>
+          <dd>{manager ? manager.displayName : <span className={styles.unknown}>—</span>}</dd>
+        </div>
+        <div>
+          <dt><Trans>People reporting</Trans></dt>
+          <dd>{me ? me.reports : <span className={styles.unknown}>—</span>}</dd>
+        </div>
+        <div>
+          <dt><Trans>Signed in as</Trans></dt>
+          <dd>{PERSONAS.find((persona) => persona.id === session.persona)?.label ?? session.persona}</dd>
+        </div>
+      </dl>
+
       <section className={styles.section}>
         <h3 className={styles.heading}>
-          <Trans>Role</Trans>
+          <Trans>Sign in as</Trans>
         </h3>
         <p className={styles.note}>
           <Trans>
-            The sample mints one token per role. Switching changes which token every request
-            carries — not what the screen hides.
+            This build has no login. Each role is a token the client sends, so switching here is
+            what signing in as somebody else would be — the server sees a different caller, not a
+            screen with fewer buttons.
           </Trans>
         </p>
         <ButtonGroup label={t`Signed-in role`}>

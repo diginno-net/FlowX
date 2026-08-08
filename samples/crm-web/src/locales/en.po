@@ -157,6 +157,10 @@ msgstr "No filters are applied."
 msgid "No grants. Every write is refused."
 msgstr "No grants. Every write is refused."
 
+#: src/shell/ProfileDrawer.tsx
+msgid "Not in the org chart"
+msgstr "Not in the org chart"
+
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Nothing in this filter closes before the end of the month."
 msgstr "Nothing in this filter closes before the end of the month."
@@ -215,6 +219,10 @@ msgctxt "a deal in the pipeline"
 msgid "Opportunity"
 msgstr "Opportunity"
 
+#: src/shell/ProfileDrawer.tsx
+msgid "Organisation"
+msgstr "Organisation"
+
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Outcome"
 msgstr "Outcome"
@@ -222,6 +230,10 @@ msgstr "Outcome"
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Owner"
 msgstr "Owner"
+
+#: src/shell/ProfileDrawer.tsx
+msgid "People reporting"
+msgstr "People reporting"
 
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Pipeline by stage"
@@ -245,6 +257,10 @@ msgstr "Planning"
 msgid "Profile"
 msgstr "Profile"
 
+#: src/shell/AppShell.tsx
+msgid "Profile and preferences"
+msgstr "Profile and preferences"
+
 #: src/shell/navigation.ts
 msgctxt "a priced proposal"
 msgid "Quote"
@@ -263,13 +279,17 @@ msgstr "Record types"
 msgid "Reports"
 msgstr "Reports"
 
+#: src/shell/ProfileDrawer.tsx
+msgid "Reports to"
+msgstr "Reports to"
+
 #: src/features/sales/ConsoleScreen.tsx
 msgid "Rhythm"
 msgstr "Rhythm"
 
 #: src/shell/ProfileDrawer.tsx
-msgid "Role"
-msgstr "Role"
+#~ msgid "Role"
+#~ msgstr "Role"
 
 #: src/shell/navigation.ts
 msgctxt "rail glyph label for Analytics"
@@ -317,10 +337,18 @@ msgstr "Setup"
 msgid "Showing the default view"
 msgstr "Showing the default view"
 
+#: src/shell/ProfileDrawer.tsx
+msgid "Sign in as"
+msgstr "Sign in as"
+
+#: src/shell/ProfileDrawer.tsx
+msgid "Signed in as"
+msgstr "Signed in as"
+
 #. placeholder {0}: session.tenantId
 #: src/shell/ProfileDrawer.tsx
-msgid "Signed in to {0}"
-msgstr "Signed in to {0}"
+#~ msgid "Signed in to {0}"
+#~ msgstr "Signed in to {0}"
 
 #: src/shell/ProfileDrawer.tsx
 msgid "Signed-in role"
@@ -350,8 +378,12 @@ msgid "the deals behind it"
 msgstr "the deals behind it"
 
 #: src/shell/ProfileDrawer.tsx
-msgid "The sample mints one token per role. Switching changes which token every request carries — not what the screen hides."
-msgstr "The sample mints one token per role. Switching changes which token every request carries — not what the screen hides."
+#~ msgid "The sample mints one token per role. Switching changes which token every request carries — not what the screen hides."
+#~ msgstr "The sample mints one token per role. Switching changes which token every request carries — not what the screen hides."
+
+#: src/shell/ProfileDrawer.tsx
+msgid "This build has no login. Each role is a token the client sends, so switching here is what signing in as somebody else would be — the server sees a different caller, not a screen with fewer buttons."
+msgstr "This build has no login. Each role is a token the client sends, so switching here is what signing in as somebody else would be — the server sees a different caller, not a screen with fewer buttons."
 
 #: src/features/sales/ConsoleScreen.tsx
 msgid "This month"
